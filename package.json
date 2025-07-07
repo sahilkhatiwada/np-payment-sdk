@@ -1,6 +1,6 @@
 {
   "name": "np-payment-sdk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Unified Payment SDK for Nepal (eSewa, Khalti, ConnectIPS, IME Pay, Mobile Banking)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
