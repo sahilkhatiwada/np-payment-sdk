@@ -2,6 +2,7 @@
 
 Unified Payment SDK for Nepal
 
+[![npm version](https://img.shields.io/npm/v/np-payment-sdk)](https://www.npmjs.com/package/np-payment-sdk)
 [![npm](https://img.shields.io/npm/dt/np-payment-sdk)](https://www.npmjs.com/package/np-payment-sdk)
 [![License](https://img.shields.io/github/license/sahilkhatiwada/np-payment-sdk)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/sahilkhatiwada/np-payment-sdk?style=social)](https://github.com/sahilkhatiwada/np-payment-sdk/stargazers)
