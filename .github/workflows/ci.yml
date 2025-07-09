@@ -1,4 +1,4 @@
-name: NP Payment SDK CI
+name: CI
 
 on:
   push:
