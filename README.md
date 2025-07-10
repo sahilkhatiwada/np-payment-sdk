@@ -2,6 +2,16 @@
 
 Unified Payment SDK for Nepal
 
+[![npm version](https://img.shields.io/npm/v/np-payment-sdk)](https://www.npmjs.com/package/np-payment-sdk)
+[![npm](https://img.shields.io/npm/dt/np-payment-sdk)](https://www.npmjs.com/package/np-payment-sdk)
+[![License](https://img.shields.io/github/license/sahilkhatiwada/np-payment-sdk)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/sahilkhatiwada/np-payment-sdk?style=social)](https://github.com/sahilkhatiwada/np-payment-sdk/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/sahilkhatiwada/np-payment-sdk?style=social)](https://github.com/sahilkhatiwada/np-payment-sdk/network)
+[![GitHub issues](https://img.shields.io/github/issues/sahilkhatiwada/np-payment-sdk)](https://github.com/sahilkhatiwada/np-payment-sdk/issues)
+[![Last Commit](https://img.shields.io/github/last-commit/sahilkhatiwada/np-payment-sdk)](https://github.com/sahilkhatiwada/np-payment-sdk/commits/master)
+[![Build Status](https://github.com/sahilkhatiwada/np-payment-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkhatiwada/np-payment-sdk/actions/workflows/ci.yml)
+
+
 ## Features
 - Unified API for multiple Nepali payment gateways (eSewa, Khalti, ConnectIPS, IME Pay, Mobile Banking)
 - Easy configuration for sandbox & production
