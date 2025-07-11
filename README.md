@@ -144,8 +144,11 @@ Use the provided `paymentWebhookHandler` for Express/Node.js to handle payment s
 - [Frontend (React)](examples/frontend-react-usage.md)
 - [Next.js](examples/nextjs-usage.md)
 
-## Contributing
+## 🤝 Contributing
 Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
 
-## License
-MIT
+Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
+
+## 📄 License
+
+The MIT License (MIT). Please see [License File](LICENSE) for more information.
