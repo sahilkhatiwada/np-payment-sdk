@@ -27,47 +27,197 @@ Unified Payment SDK for Nepal and Global Payments
 - IME Pay
 - Mobile Banking
 - Stripe (global)
-- PayPal (global, coming soon)
-- Razorpay, Cashfree, Flutterwave, Paystack (coming soon)
+- PayPal (global)
+- Razorpay, Cashfree, Flutterwave, Paystack
 
-## Installation
-```bash
-npm install np-payment-sdk
-```
+## Gateway Configuration & Usage
 
-## Usage Example (Unified API)
-```typescript
-import { PaymentSDK, GatewayType, eventBus } from 'np-payment-sdk';
-import { StripeGateway } from 'np-payment-sdk/src/global-gateways/stripe';
+Below are examples for each supported payment gateway.  
+**Note:** Never expose secret keys in frontend code. Always use these in your backend.
 
+---
+
+### **eSewa**
+```js
 const sdk = new PaymentSDK({
-  mode: 'production',
   gateways: {
-    esewa: { clientId: '...', secret: '...' },
-    stripe: { apiKey: 'sk_live_...' },
-    // ...other gateways
-  },
-  customProviders: {
-    stripe: new StripeGateway({ apiKey: 'sk_live_...' })
+    esewa: {
+      clientId: 'YOUR_ESEWA_CLIENT_ID',
+      secret: 'YOUR_ESEWA_SECRET',
+      // baseUrl: 'https://uat.esewa.com.np' // optional, for sandbox/live
+    }
   }
 });
+```
+- **Supports:** pay, verify, refund
 
-// Listen to payment events
-eventBus.on('pay', ({ gateway, params, result }) => {
-  console.log(`Payment event from ${gateway}:`, result);
+---
+
+### **Khalti**
+```js
+const sdk = new PaymentSDK({
+  gateways: {
+    khalti: {
+      publicKey: 'YOUR_KHALTI_PUBLIC_KEY',
+      secretKey: 'YOUR_KHALTI_SECRET_KEY',
+      // baseUrl: 'https://khalti.com/api/v2' // optional
+    }
+  }
 });
+```
+- **Supports:** pay, verify, refund
 
-async function makeStripePayment() {
-  const result = await sdk.pay({
-    gateway: GatewayType.STRIPE,
-    amount: 1000,
-    currency: 'USD',
-    returnUrl: 'https://yourapp.com/payment/callback',
-  });
-  console.log(result);
-}
+---
 
-makeStripePayment();
+### **ConnectIPS**
+```js
+const sdk = new PaymentSDK({
+  gateways: {
+    connectips: {
+      clientId: 'YOUR_CONNECTIPS_CLIENT_ID',
+      secret: 'YOUR_CONNECTIPS_SECRET',
+      // baseUrl: 'https://uat.connectips.com' // optional
+    }
+  }
+});
+```
+- **Supports:** pay, verify, refund
+
+---
+
+### **IME Pay**
+```js
+const sdk = new PaymentSDK({
+  gateways: {
+    imepay: {
+      merchantCode: 'YOUR_IMEPAY_MERCHANT_CODE',
+      apiKey: 'YOUR_IMEPAY_API_KEY',
+      // baseUrl: 'https://staging.imepay.com.np' // optional
+    }
+  }
+});
+```
+- **Supports:** pay, verify, refund
+
+---
+
+### **Mobile Banking**
+```js
+const sdk = new PaymentSDK({
+  gateways: {
+    mobilebanking: {
+      bankId: 'YOUR_BANK_ID',
+      apiKey: 'YOUR_BANK_API_KEY',
+      // baseUrl: 'https://api.mobilebanking.com.np' // optional
+    }
+  }
+});
+```
+- **Supports:** pay, verify, refund
+
+---
+
+### **Stripe (Global)**
+```js
+const sdk = new PaymentSDK({
+  gateways: {
+    stripe: {
+      apiKey: 'sk_live_...' // Secret key from Stripe dashboard
+    }
+  }
+});
+```
+- **Supports:** pay, verify, refund, subscription, invoice
+
+---
+
+### **PayPal (Global)**
+```js
+const sdk = new PaymentSDK({
+  gateways: {
+    paypal: {
+      clientId: 'YOUR_PAYPAL_CLIENT_ID',
+      clientSecret: 'YOUR_PAYPAL_CLIENT_SECRET',
+      environment: 'sandbox' // or 'production'
+    }
+  }
+});
+```
+- **Supports:** pay, verify, refund
+
+---
+
+### **Razorpay (Global)**
+```js
+const sdk = new PaymentSDK({
+  gateways: {
+    razorpay: {
+      keyId: 'YOUR_RAZORPAY_KEY_ID',
+      keySecret: 'YOUR_RAZORPAY_KEY_SECRET'
+    }
+  }
+});
+```
+- **Supports:** pay, verify, refund, subscription, invoice
+
+---
+
+### **Cashfree (Global)**
+```js
+const sdk = new PaymentSDK({
+  gateways: {
+    cashfree: {
+      clientId: 'YOUR_CASHFREE_CLIENT_ID',
+      clientSecret: 'YOUR_CASHFREE_CLIENT_SECRET',
+      environment: 'TEST' // or 'PROD'
+    }
+  }
+});
+```
+- **Supports:** pay, verify, refund
+
+---
+
+### **Flutterwave (Global)**
+```js
+const sdk = new PaymentSDK({
+  gateways: {
+    flutterwave: {
+      publicKey: 'YOUR_FLUTTERWAVE_PUBLIC_KEY',
+      secretKey: 'YOUR_FLUTTERWAVE_SECRET_KEY',
+      encryptionKey: 'YOUR_FLUTTERWAVE_ENCRYPTION_KEY'
+    }
+  }
+});
+```
+- **Supports:** pay, verify, refund
+
+---
+
+### **Paystack (Global)**
+```js
+const sdk = new PaymentSDK({
+  gateways: {
+    paystack: {
+      secretKey: 'YOUR_PAYSTACK_SECRET_KEY'
+    }
+  }
+});
+```
+- **Supports:** pay, verify, refund
+
+---
+
+## Usage Pattern (All Gateways)
+```js
+// Initiate a payment
+const result = await sdk.pay({
+  gateway: 'esewa', // or 'khalti', 'stripe', etc.
+  amount: 1000,
+  currency: 'NPR', // or 'USD', 'INR', etc.
+  returnUrl: 'https://yourapp.com/payment/callback',
+  // ...other params as required by the gateway
+});
 ```
 
 ## Multi-Currency & Payment Types
