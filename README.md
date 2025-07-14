@@ -1,12 +1,12 @@
 # np-payment-sdk
 
-Unified Payment SDK for Nepal
+Unified Payment SDK for Nepal and Global Payments
 
 ## Features
-- Unified API for multiple Nepali payment gateways (eSewa, Khalti, ConnectIPS, IME Pay, Mobile Banking)
+- Unified API for Nepali and global payment gateways (eSewa, Khalti, ConnectIPS, IME Pay, Mobile Banking, Stripe, PayPal, Razorpay, and more)
 - Easy configuration for sandbox & production
-- Payment, verification, and refund flows
-- Webhook handler for payment status updates
+- Payment, verification, refund, subscription, invoice, and wallet flows
+- Event system for payment events and webhooks
 - Transaction history utilities
 - TypeScript support
 
@@ -16,121 +16,79 @@ Unified Payment SDK for Nepal
 - ConnectIPS
 - IME Pay
 - Mobile Banking
+- Stripe (global)
+- PayPal (global, coming soon)
+- Razorpay, Cashfree, Flutterwave, Paystack (coming soon)
 
 ## Installation
 ```bash
 npm install np-payment-sdk
-# or
-yarn add np-payment-sdk
-# or
-pnpm add np-payment-sdk
 ```
 
-## Basic Usage
+## Usage Example (Unified API)
 ```typescript
-import { PaymentSDK, GatewayType } from 'np-payment-sdk';
+import { PaymentSDK, GatewayType, eventBus } from 'np-payment-sdk';
+import { StripeGateway } from 'np-payment-sdk/src/global-gateways/stripe';
 
 const sdk = new PaymentSDK({
-  mode: 'sandbox',
+  mode: 'production',
   gateways: {
-    esewa: { clientId: 'your-esewa-client-id', secret: 'your-esewa-secret' },
-    khalti: { publicKey: 'your-khalti-public-key', secretKey: 'your-khalti-secret-key' },
+    esewa: { clientId: '...', secret: '...' },
+    stripe: { apiKey: 'sk_live_...' },
     // ...other gateways
+  },
+  customProviders: {
+    stripe: new StripeGateway({ apiKey: 'sk_live_...' })
   }
 });
 
-async function makePayment() {
+// Listen to payment events
+eventBus.on('pay', ({ gateway, params, result }) => {
+  console.log(`Payment event from ${gateway}:`, result);
+});
+
+async function makeStripePayment() {
   const result = await sdk.pay({
-    gateway: GatewayType.ESEWA,
+    gateway: GatewayType.STRIPE,
     amount: 1000,
-    currency: 'NPR',
+    currency: 'USD',
     returnUrl: 'https://yourapp.com/payment/callback',
   });
   console.log(result);
 }
 
-makePayment();
+makeStripePayment();
 ```
 
-## Advanced Usage (Express + Webhook)
-```typescript
-import express from 'express';
-import { PaymentSDK, GatewayType } from 'np-payment-sdk';
-import { paymentWebhookHandler } from 'np-payment-sdk/handlers/webhook';
+## Multi-Currency & Payment Types
+- All payment methods accept a `currency` parameter (e.g., 'USD', 'INR', 'NPR').
+- Unified methods: `pay`, `verify`, `refund`, `subscribe`, `createInvoice`, `wallet` (where supported by provider).
 
-const sdk = new PaymentSDK({
-  mode: 'production',
-  gateways: {
-    khalti: {
-      publicKey: process.env.KHALTI_PUBLIC_KEY || '',
-      secretKey: process.env.KHALTI_SECRET_KEY || '',
-      baseUrl: 'https://khalti.com/api/v2',
-    },
-  },
-});
+## Event System
+- Listen to events: `pay`, `verify`, `refund`, `subscribe`, `createInvoice`, `wallet`.
+- Example:
+  ```typescript
+  eventBus.on('pay', ({ gateway, params, result }) => {
+    // handle payment event
+  });
+  ```
 
-// Initiate payment
-const payment = await sdk.pay({
-  gateway: GatewayType.KHALTI,
-  amount: 1000,
-  currency: 'NPR',
-  returnUrl: 'https://yourapp.com/payment/callback',
-  transactionId: 'demo-tx-1',
-  purchaseOrderName: 'Test Order',
-  customerInfo: {
-    name: 'Test User',
-    email: 'test@example.com',
-    phone: '9800000000',
-  },
-});
-sdk.addTransaction({ ...payment, transactionId: 'demo-tx-1', createdAt: new Date(), updatedAt: new Date() });
+## Adding/Using Providers
+- Built-in: eSewa, Khalti, ConnectIPS, IME Pay, Mobile Banking
+- Global: Stripe (with `StripeGateway`), more coming soon
+- Register custom providers at runtime:
+  ```typescript
+  sdk.registerProvider('custom', new MyCustomGateway(...));
+  ```
 
-// Express webhook integration
-const app = express();
-app.use(express.json());
-app.post('/webhook', paymentWebhookHandler);
-app.listen(3000, () => console.log('Webhook server running on port 3000'));
-```
-
-## Frontend Usage (React/Next.js)
-**Never expose your secret keys in frontend code! Always use a backend API.**
-
-### React Example
-See [`examples/frontend-react-usage.md`](examples/frontend-react-usage.md) for a full guide.
-
-### Next.js Example
-See [`examples/nextjs-usage.md`](examples/nextjs-usage.md) for a full guide.
-
-## API Reference
-### PaymentSDK
-- `constructor(config: PaymentSDKConfig)`
-- `pay(params: PaymentParams): Promise<PaymentResult>`
-- `verify(params: { gateway, transactionId, amount }): Promise<PaymentResult>`
-- `refund(params: { gateway, transactionId, amount }): Promise<PaymentResult>`
-- `addTransaction(record)`
-- `updateTransaction(transactionId, updates)`
-- `getTransaction(transactionId)`
-- `listTransactions()`
-
-### Types
-- `PaymentParams`: `{ gateway, amount, currency, returnUrl, ... }`
-- `PaymentResult`: `{ gateway, status, params, message? }`
-- `PaymentError extends Error`
-- `GatewayType`: Enum of supported gateways
-
-### Gateway Configs
-- **eSewa**: `{ clientId, secret, baseUrl? }`
-- **Khalti**: `{ publicKey, secretKey, baseUrl? }`
-- **ConnectIPS**: `{ clientId, secret, baseUrl? }`
-- **IME Pay**: `{ merchantCode, apiKey, baseUrl? }`
-- **Mobile Banking**: `{ bankId, apiKey, baseUrl? }`
-
-## Webhook Integration
-Use the provided `paymentWebhookHandler` for Express/Node.js to handle payment status updates from gateways. See the [advanced usage example](#advanced-usage-express--webhook) and [`examples/advanced-usage.ts`](examples/advanced-usage.ts).
+## Migration Guide
+- Old: `sdk.pay({ gateway: GatewayType.ESEWA, ... })`
+- New: Same, but now you can use any provider key (including global ones) and listen to events.
+- All types are now unified and support multi-currency and new payment types.
 
 ## Examples
 - [Basic Usage](examples/basic-usage.ts)
-- [Advanced Usage](examples/advanced-usage.ts)
+- [Express MVC Example](examples/express-server/README.md)
 - [Frontend (React)](examples/frontend-react-usage.md)
 - [Next.js](examples/nextjs-usage.md)
 

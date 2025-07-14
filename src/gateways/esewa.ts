@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { PaymentParams, PaymentResult, PaymentError } from '../types';
+import { PaymentError, PaymentParams, PaymentResult } from '../types';
 
 export interface EsewaConfig {
   clientId: string;

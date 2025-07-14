@@ -1,3 +1,4 @@
+// Minimal usage example. For a full Express server, see examples/express-server/app.ts
 import { PaymentSDK, GatewayType } from '../src';
 
 const sdk = new PaymentSDK({

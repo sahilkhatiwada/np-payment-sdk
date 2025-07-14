@@ -6,6 +6,8 @@ import { MobileBankingGateway, MobileBankingConfig } from './gateways/mobilebank
 import { PaymentParams, PaymentResult, PaymentError } from './types';
 import * as txStore from './utils/transactionStore';
 import { TransactionRecord } from './utils/transactionStore';
+import { IPaymentGateway } from './types/gateway';
+import { eventBus } from './utils/eventBus';
 
 export enum GatewayType {
   ESEWA = 'esewa',
@@ -13,6 +15,13 @@ export enum GatewayType {
   CONNECTIPS = 'connectips',
   IMEPAY = 'imepay',
   MOBILEBANKING = 'mobilebanking',
+  STRIPE = 'stripe',
+  PAYPAL = 'paypal',
+  RAZORPAY = 'razorpay',
+  CASHFREE = 'cashfree',
+  FLUTTERWAVE = 'flutterwave',
+  PAYSTACK = 'paystack',
+  // ...add more as needed
 }
 
 export interface PaymentSDKConfig {
@@ -23,33 +32,59 @@ export interface PaymentSDKConfig {
     connectips?: ConnectIPSConfig;
     imepay?: IMEPayConfig;
     mobilebanking?: MobileBankingConfig;
+    stripe?: any;
+    paypal?: any;
+    razorpay?: any;
+    cashfree?: any;
+    flutterwave?: any;
+    paystack?: any;
     [key: string]: any;
   };
+  customProviders?: { [key: string]: IPaymentGateway };
 }
 
 export class PaymentSDK {
-  private esewa?: EsewaGateway;
-  private khalti?: KhaltiGateway;
-  private connectips?: ConnectIPSGateway;
-  private imepay?: IMEPayGateway;
-  private mobilebanking?: MobileBankingGateway;
+  private gateways: Map<string, IPaymentGateway> = new Map();
 
   constructor(private config: PaymentSDKConfig) {
+    // Local gateways
     if (config.gateways.esewa) {
-      this.esewa = new EsewaGateway(config.gateways.esewa);
+      this.gateways.set(GatewayType.ESEWA, new EsewaGateway(config.gateways.esewa));
     }
     if (config.gateways.khalti) {
-      this.khalti = new KhaltiGateway(config.gateways.khalti);
+      this.gateways.set(GatewayType.KHALTI, new KhaltiGateway(config.gateways.khalti));
     }
     if (config.gateways.connectips) {
-      this.connectips = new ConnectIPSGateway(config.gateways.connectips);
+      this.gateways.set(GatewayType.CONNECTIPS, new ConnectIPSGateway(config.gateways.connectips));
     }
     if (config.gateways.imepay) {
-      this.imepay = new IMEPayGateway(config.gateways.imepay);
+      this.gateways.set(GatewayType.IMEPAY, new IMEPayGateway(config.gateways.imepay));
     }
     if (config.gateways.mobilebanking) {
-      this.mobilebanking = new MobileBankingGateway(config.gateways.mobilebanking);
+      this.gateways.set(GatewayType.MOBILEBANKING, new MobileBankingGateway(config.gateways.mobilebanking));
     }
+    // Global gateways (to be implemented)
+    if (config.gateways.stripe) {
+      // Placeholder: will import and use StripeGateway
+      // this.gateways.set(GatewayType.STRIPE, new StripeGateway(config.gateways.stripe));
+    }
+    if (config.gateways.paypal) {
+      // Placeholder: will import and use PayPalGateway
+    }
+    // ...add more as needed
+    // Custom providers
+    if (config.customProviders) {
+      for (const [key, provider] of Object.entries(config.customProviders)) {
+        this.gateways.set(key, provider);
+      }
+    }
+  }
+
+  /**
+   * Register a new payment provider at runtime
+   */
+  registerProvider(key: string, provider: IPaymentGateway) {
+    this.gateways.set(key, provider);
   }
 
   async pay(params: PaymentParams): Promise<PaymentResult> {
@@ -68,84 +103,63 @@ export class PaymentSDK {
     if (!params.returnUrl) {
       throw new PaymentError('Missing returnUrl', 'MISSING_RETURN_URL');
     }
-    try {
-      switch (params.gateway) {
-        case GatewayType.ESEWA:
-          if (!this.esewa) throw new PaymentError('eSewa not configured', 'ESEWA_NOT_CONFIGURED');
-          return await this.esewa.pay(params);
-        case GatewayType.KHALTI:
-          if (!this.khalti) throw new PaymentError('Khalti not configured', 'KHALTI_NOT_CONFIGURED');
-          return await this.khalti.pay(params);
-        case GatewayType.CONNECTIPS:
-          if (!this.connectips) throw new PaymentError('ConnectIPS not configured', 'CONNECTIPS_NOT_CONFIGURED');
-          return await this.connectips.pay(params);
-        case GatewayType.IMEPAY:
-          if (!this.imepay) throw new PaymentError('IME Pay not configured', 'IMEPAY_NOT_CONFIGURED');
-          return await this.imepay.pay(params);
-        case GatewayType.MOBILEBANKING:
-          if (!this.mobilebanking) throw new PaymentError('Mobile Banking not configured', 'MOBILEBANKING_NOT_CONFIGURED');
-          return await this.mobilebanking.pay(params);
-        default:
-          throw new PaymentError('Unsupported gateway', 'UNSUPPORTED_GATEWAY');
-      }
-    } catch (err: any) {
-      if (err instanceof PaymentError) throw err;
-      throw new PaymentError(err.message || 'Unknown error', 'INTERNAL_ERROR');
+    const gateway = this.gateways.get(params.gateway);
+    if (!gateway) {
+      throw new PaymentError('Gateway not configured: ' + params.gateway, 'GATEWAY_NOT_CONFIGURED');
     }
+    const result = await gateway.pay(params);
+    eventBus.emit('pay', { gateway: params.gateway, params, result });
+    return result;
   }
 
-  async verify(params: { gateway: GatewayType; transactionId: string; amount: number; }): Promise<PaymentResult> {
-    try {
-      switch (params.gateway) {
-        case GatewayType.ESEWA:
-          if (!this.esewa) throw new PaymentError('eSewa not configured', 'ESEWA_NOT_CONFIGURED');
-          return await this.esewa.verify(params);
-        case GatewayType.KHALTI:
-          if (!this.khalti) throw new PaymentError('Khalti not configured', 'KHALTI_NOT_CONFIGURED');
-          return await this.khalti.verify(params);
-        case GatewayType.CONNECTIPS:
-          if (!this.connectips) throw new PaymentError('ConnectIPS not configured', 'CONNECTIPS_NOT_CONFIGURED');
-          return await this.connectips.verify(params);
-        case GatewayType.IMEPAY:
-          if (!this.imepay) throw new PaymentError('IME Pay not configured', 'IMEPAY_NOT_CONFIGURED');
-          return await this.imepay.verify(params);
-        case GatewayType.MOBILEBANKING:
-          if (!this.mobilebanking) throw new PaymentError('Mobile Banking not configured', 'MOBILEBANKING_NOT_CONFIGURED');
-          return await this.mobilebanking.verify(params);
-        default:
-          throw new PaymentError('Unsupported gateway', 'UNSUPPORTED_GATEWAY');
-      }
-    } catch (err: any) {
-      if (err instanceof PaymentError) throw err;
-      throw new PaymentError(err.message || 'Unknown error', 'INTERNAL_ERROR');
+  async verify(params: any): Promise<PaymentResult> {
+    const gateway = this.gateways.get(params.gateway);
+    if (!gateway) {
+      throw new PaymentError('Gateway not configured: ' + params.gateway, 'GATEWAY_NOT_CONFIGURED');
     }
+    const result = await gateway.verify(params);
+    eventBus.emit('verify', { gateway: params.gateway, params, result });
+    return result;
   }
 
-  async refund(params: { gateway: GatewayType; transactionId: string; amount: number; }): Promise<PaymentResult> {
-    try {
-      switch (params.gateway) {
-        case GatewayType.ESEWA:
-          if (!this.esewa) throw new PaymentError('eSewa not configured', 'ESEWA_NOT_CONFIGURED');
-          return await this.esewa.refund(params);
-        case GatewayType.KHALTI:
-          if (!this.khalti) throw new PaymentError('Khalti not configured', 'KHALTI_NOT_CONFIGURED');
-          return await this.khalti.refund(params);
-        case GatewayType.CONNECTIPS:
-          if (!this.connectips) throw new PaymentError('ConnectIPS not configured', 'CONNECTIPS_NOT_CONFIGURED');
-          return await this.connectips.refund(params);
-        case GatewayType.IMEPAY:
-          if (!this.imepay) throw new PaymentError('IME Pay not configured', 'IMEPAY_NOT_CONFIGURED');
-          return await this.imepay.refund(params);
-        case GatewayType.MOBILEBANKING:
-          if (!this.mobilebanking) throw new PaymentError('Mobile Banking not configured', 'MOBILEBANKING_NOT_CONFIGURED');
-          return await this.mobilebanking.refund(params);
-        default:
-          throw new PaymentError('Unsupported gateway', 'UNSUPPORTED_GATEWAY');
-      }
-    } catch (err: any) {
-      if (err instanceof PaymentError) throw err;
-      throw new PaymentError(err.message || 'Unknown error', 'INTERNAL_ERROR');
+  async refund(params: any): Promise<PaymentResult> {
+    const gateway = this.gateways.get(params.gateway);
+    if (!gateway) {
+      throw new PaymentError('Gateway not configured: ' + params.gateway, 'GATEWAY_NOT_CONFIGURED');
     }
+    const result = await gateway.refund(params);
+    eventBus.emit('refund', { gateway: params.gateway, params, result });
+    return result;
+  }
+
+  async subscribe(params: any): Promise<any> {
+    const gateway = this.gateways.get(params.gateway);
+    if (!gateway || !gateway.subscribe) {
+      throw new PaymentError('Subscription not supported for gateway: ' + params.gateway, 'SUBSCRIPTION_NOT_SUPPORTED');
+    }
+    const result = await gateway.subscribe(params);
+    eventBus.emit('subscribe', { gateway: params.gateway, params, result });
+    return result;
+  }
+
+  async createInvoice(params: any): Promise<any> {
+    const gateway = this.gateways.get(params.gateway);
+    if (!gateway || !gateway.createInvoice) {
+      throw new PaymentError('Invoice not supported for gateway: ' + params.gateway, 'INVOICE_NOT_SUPPORTED');
+    }
+    const result = await gateway.createInvoice(params);
+    eventBus.emit('createInvoice', { gateway: params.gateway, params, result });
+    return result;
+  }
+
+  async wallet(params: any): Promise<any> {
+    const gateway = this.gateways.get(params.gateway);
+    if (!gateway || !gateway.wallet) {
+      throw new PaymentError('Wallet not supported for gateway: ' + params.gateway, 'WALLET_NOT_SUPPORTED');
+    }
+    const result = await gateway.wallet(params);
+    eventBus.emit('wallet', { gateway: params.gateway, params, result });
+    return result;
   }
 
   // Transaction history and reconciliation tools
@@ -161,4 +175,6 @@ export class PaymentSDK {
   listTransactions(): TransactionRecord[] {
     return txStore.listTransactions();
   }
-} 
+}
+
+export { eventBus }; 
