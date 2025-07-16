@@ -5,7 +5,7 @@ import Flutterwave from 'flutterwave-node-v3';
  * Flutterwave payment gateway implementation (real)
  */
 export class FlutterwaveGateway implements IPaymentGateway {
-  private flw: any;
+  private flw: unknown;
 
   constructor(private config: { publicKey: string; secretKey: string; encryptionKey: string }) {
     this.flw = new Flutterwave(config.publicKey, config.secretKey);
@@ -28,12 +28,14 @@ export class FlutterwaveGateway implements IPaymentGateway {
         tx_ref: params.transactionId || `flw_tx_${Date.now()}`,
         redirect_url: params.returnUrl,
       };
-      const response = await this.flw.Charge.card(payload);
+      const response = await (this.flw as unknown as { Charge: { card: (payload: Record<string, unknown>) => Promise<Record<string, unknown>> } }).Charge.card(payload);
+      let message = (response as Record<string, unknown>).message;
+      if (typeof message !== 'string') message = 'Flutterwave payment initiated';
       return {
         gateway: 'flutterwave',
-        status: response.status === 'success' ? 'success' : 'failure',
-        params: response,
-        message: response.message || 'Flutterwave payment initiated',
+        status: (response as Record<string, unknown>).status === 'success' ? 'success' : 'failure',
+        params: response as Record<string, unknown>,
+        message: message as string,
       };
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -58,11 +60,11 @@ export class FlutterwaveGateway implements IPaymentGateway {
    */
   async verify(params: VerifyParams): Promise<PaymentResult> {
     try {
-      const response = await this.flw.Transaction.verify({ id: params.transactionId });
+      const response = await (this.flw as unknown as { Transaction: { verify: (params: Record<string, unknown>) => Promise<{ data: Record<string, unknown> }> } }).Transaction.verify({ id: params.transactionId });
       return {
         gateway: 'flutterwave',
-        status: response.data.status === 'successful' ? 'success' : 'failure',
-        params: response.data,
+        status: (response as { data: Record<string, unknown> }).data.status === 'successful' ? 'success' : 'failure',
+        params: (response as { data: Record<string, unknown> }).data,
         message: 'Flutterwave payment verification',
       };
     } catch (err: unknown) {
@@ -88,16 +90,18 @@ export class FlutterwaveGateway implements IPaymentGateway {
    */
   async refund(params: RefundParams): Promise<PaymentResult> {
     try {
-      const response = await this.flw.Refund.refund({
+      const response = await (this.flw as unknown as { Refund: { refund: (params: Record<string, unknown>) => Promise<Record<string, unknown>> } }).Refund.refund({
         id: params.transactionId,
         amount: params.amount,
         secKey: this.config.secretKey,
       });
+      let refundMessage = (response as Record<string, unknown>).message;
+      if (typeof refundMessage !== 'string') refundMessage = 'Flutterwave refund processed';
       return {
         gateway: 'flutterwave',
-        status: response.status === 'success' ? 'success' : 'failure',
-        params: response,
-        message: response.message || 'Flutterwave refund processed',
+        status: (response as Record<string, unknown>).status === 'success' ? 'success' : 'failure',
+        params: response as Record<string, unknown>,
+        message: refundMessage as string,
       };
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -120,7 +124,8 @@ export class FlutterwaveGateway implements IPaymentGateway {
   /**
    * Create a subscription (not implemented)
    */
-  async subscribe(params: any): Promise<SubscriptionResult> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async subscribe(_params?: Record<string, unknown>): Promise<SubscriptionResult> {
     return {
       gateway: 'flutterwave',
       status: 'cancelled',
@@ -132,7 +137,8 @@ export class FlutterwaveGateway implements IPaymentGateway {
   /**
    * Create an invoice (not implemented)
    */
-  async createInvoice(params: any): Promise<InvoiceResult> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async createInvoice(_params?: Record<string, unknown>): Promise<InvoiceResult> {
     return {
       gateway: 'flutterwave',
       status: 'cancelled',
@@ -144,7 +150,8 @@ export class FlutterwaveGateway implements IPaymentGateway {
   /**
    * Wallet operations (not supported)
    */
-  async wallet(params: any): Promise<WalletResult> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async wallet(_params?: Record<string, unknown>): Promise<WalletResult> {
     return {
       gateway: 'flutterwave',
       status: 'failure',

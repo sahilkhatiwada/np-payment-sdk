@@ -152,36 +152,39 @@ export class PayPalGateway implements IPaymentGateway {
   /**
    * Create a subscription (not implemented)
    */
-  async subscribe(params: any): Promise<SubscriptionResult> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async subscribe(_params?: Record<string, unknown>): Promise<SubscriptionResult> {
     return {
       gateway: 'paypal',
       status: 'cancelled',
       params: {},
-      message: 'PayPal subscription not implemented',
+      message: 'Paypal subscription not implemented',
     };
   }
 
   /**
    * Create an invoice (not implemented)
    */
-  async createInvoice(params: any): Promise<InvoiceResult> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async createInvoice(_params?: Record<string, unknown>): Promise<InvoiceResult> {
     return {
       gateway: 'paypal',
       status: 'cancelled',
       params: {},
-      message: 'PayPal invoice not implemented',
+      message: 'Paypal invoice not implemented',
     };
   }
 
   /**
    * Wallet operations (not supported)
    */
-  async wallet(params: any): Promise<WalletResult> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async wallet(_params?: Record<string, unknown>): Promise<WalletResult> {
     return {
       gateway: 'paypal',
       status: 'failure',
       params: {},
-      message: 'PayPal does not support wallet operations',
+      message: 'Paypal does not support wallet operations',
     };
   }
 } 

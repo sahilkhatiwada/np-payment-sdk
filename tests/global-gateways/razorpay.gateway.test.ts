@@ -1,5 +1,5 @@
 import { RazorpayGateway } from '../../src/global-gateways/razorpay';
-import { PaymentParams, VerifyParams, RefundParams, SubscriptionParams, InvoiceParams, WalletParams } from '../../src/types/gateway';
+import { PaymentParams, VerifyParams, RefundParams, SubscriptionParams, InvoiceParams } from '../../src/types/gateway';
 
 const mockOrders = { create: jest.fn() };
 const mockPayments = { fetch: jest.fn(), refund: jest.fn() };
@@ -76,7 +76,6 @@ describe('RazorpayGateway', () => {
   });
 
   it('should return failure for wallet', async () => {
-    const params: WalletParams = { gateway: 'razorpay', customerId: 'cus', amount: 10, currency: 'INR' };
     const result = await gateway.wallet({});
     expect(result.status).toBe('failure');
   });

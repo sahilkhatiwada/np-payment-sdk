@@ -10,7 +10,7 @@ export class CashfreeGateway implements IPaymentGateway {
 
   constructor(private config: { clientId: string; clientSecret: string; environment?: CFEnvironment }) {
     const env: CFEnvironment = config.environment ?? CFEnvironment.SANDBOX;
-    // @ts-ignore
+    // @ts-expect-error: SDK expects enum, type mismatch with type definition
     this.cashfree = new Cashfree(config.clientId, config.clientSecret, env);
   }
 
@@ -87,12 +87,12 @@ export class CashfreeGateway implements IPaymentGateway {
    */
   async refund(params: RefundParams): Promise<PaymentResult> {
     try {
-      const refund = await (this.cashfree as any).PGOrderRefund(params.transactionId, params.amount);
+      const refund = await (this.cashfree as unknown as { PGOrderRefund: (transactionId: string, amount: number) => Promise<{ data: { refund_id: string; refund_status: string } }> }).PGOrderRefund(params.transactionId, params.amount);
       return {
         gateway: 'cashfree',
         status: 'success',
         params: { refundId: refund.data.refund_id, refundStatus: refund.data.refund_status },
-        message: 'Cashfree refund successful',
+        message: 'Cashfree refund processed',
       };
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -115,7 +115,8 @@ export class CashfreeGateway implements IPaymentGateway {
   /**
    * Create a subscription (not implemented)
    */
-  async subscribe(params: any): Promise<SubscriptionResult> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async subscribe(_params?: Record<string, unknown>): Promise<SubscriptionResult> {
     return {
       gateway: 'cashfree',
       status: 'cancelled',
@@ -127,7 +128,8 @@ export class CashfreeGateway implements IPaymentGateway {
   /**
    * Create an invoice (not implemented)
    */
-  async createInvoice(params: any): Promise<InvoiceResult> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async createInvoice(_params?: Record<string, unknown>): Promise<InvoiceResult> {
     return {
       gateway: 'cashfree',
       status: 'cancelled',
@@ -139,7 +141,8 @@ export class CashfreeGateway implements IPaymentGateway {
   /**
    * Wallet operations (not supported)
    */
-  async wallet(params: any): Promise<WalletResult> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async wallet(_params?: Record<string, unknown>): Promise<WalletResult> {
     return {
       gateway: 'cashfree',
       status: 'failure',

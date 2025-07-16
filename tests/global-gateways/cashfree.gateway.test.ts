@@ -1,5 +1,5 @@
 import { CashfreeGateway } from '../../src/global-gateways/cashfree';
-import { PaymentParams, VerifyParams, RefundParams, SubscriptionParams, InvoiceParams, WalletParams } from '../../src/types/gateway';
+import { PaymentParams, VerifyParams, RefundParams } from '../../src/types/gateway';
 import { CFEnvironment } from 'cashfree-pg/dist/configuration';
 
 const mockPGCreateOrder = jest.fn();

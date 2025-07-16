@@ -1,5 +1,5 @@
 import { StripeGateway } from '../../src/global-gateways/stripe';
-import { PaymentParams, VerifyParams, RefundParams, SubscriptionParams, InvoiceParams, WalletParams } from '../../src/types/gateway';
+import { PaymentParams, VerifyParams, RefundParams } from '../../src/types/gateway';
 
 jest.mock('stripe', () => {
   return jest.fn().mockImplementation(() => ({
@@ -57,35 +57,18 @@ describe('StripeGateway', () => {
   });
 
   it('should create a subscription', async () => {
-    const params: SubscriptionParams = {
-      gateway: 'stripe',
-      planId: 'plan_123',
-      customerId: 'cus_123',
-    };
     const result = await gateway.subscribe({ gateway: 'stripe', planId: 'plan', customerId: 'cus' });
     expect(result.status).toBe('active');
     expect(result.params.id).toBe('sub_123');
   });
 
   it('should create an invoice', async () => {
-    const params: InvoiceParams = {
-      gateway: 'stripe',
-      amount: 10,
-      currency: 'USD',
-      customerId: 'cus_123',
-    };
     const result = await gateway.createInvoice({ gateway: 'stripe', amount: 100, currency: 'USD', customerId: 'cus' });
     expect(result.status).toBe('created');
     expect(result.params.id).toBe('in_123');
   });
 
   it('should return failure for wallet operation', async () => {
-    const params: WalletParams = {
-      gateway: 'stripe',
-      customerId: 'cus_123',
-      amount: 10,
-      currency: 'USD',
-    };
     const result = await gateway.wallet({ gateway: 'stripe', customerId: 'cus', amount: 100, currency: 'USD' });
     expect(result.status).toBe('failure');
   });

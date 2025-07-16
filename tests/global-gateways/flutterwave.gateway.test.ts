@@ -1,5 +1,5 @@
 import { FlutterwaveGateway } from '../../src/global-gateways/flutterwave';
-import { PaymentParams, VerifyParams, RefundParams, SubscriptionParams, InvoiceParams, WalletParams } from '../../src/types/gateway';
+import { PaymentParams, VerifyParams, RefundParams } from '../../src/types/gateway';
 
 const mockCharge = { card: jest.fn() };
 const mockTransaction = { verify: jest.fn() };
@@ -36,7 +36,7 @@ describe('FlutterwaveGateway', () => {
     };
     const result = await gateway.pay(params);
     expect(result.status).toBe('success');
-    expect((result.params.data as any).id).toBe('tx_123');
+    expect((result.params.data as unknown as { id: string }).id).toBe('tx_123');
   });
 
   it('should verify a payment', async () => {

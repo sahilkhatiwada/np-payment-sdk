@@ -10,7 +10,7 @@ const mockPayments = { CapturesRefundRequest: mockCapturesRefundRequest };
 const mockOrders = { OrdersCreateRequest: mockOrdersCreateRequest, OrdersGetRequest: mockOrdersGetRequest };
 
 import { PayPalGateway } from '../../src/global-gateways/paypal';
-import { PaymentParams, VerifyParams, RefundParams, SubscriptionParams, InvoiceParams, WalletParams } from '../../src/types/gateway';
+import { PaymentParams, VerifyParams, RefundParams } from '../../src/types/gateway';
 
 jest.mock('@paypal/checkout-server-sdk', () => {
   return {

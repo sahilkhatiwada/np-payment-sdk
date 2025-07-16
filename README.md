@@ -1,262 +1,449 @@
-# np-payment-sdk
+# NP Payment SDK
 
-Unified Payment SDK for Nepal and Global Payments
+A modern, type-safe Node.js/TypeScript SDK for integrating with multiple global payment gateways (Stripe, Razorpay, Paystack, Flutterwave, Cashfree, PayPal) via a unified interface.
 
-[![npm version](https://img.shields.io/npm/v/np-payment-sdk)](https://www.npmjs.com/package/np-payment-sdk)
-[![npm](https://img.shields.io/npm/dt/np-payment-sdk)](https://www.npmjs.com/package/np-payment-sdk)
-[![License](https://img.shields.io/github/license/sahilkhatiwada/np-payment-sdk)](LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/sahilkhatiwada/np-payment-sdk?style=social)](https://github.com/sahilkhatiwada/np-payment-sdk/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/sahilkhatiwada/np-payment-sdk?style=social)](https://github.com/sahilkhatiwada/np-payment-sdk/network)
-[![GitHub issues](https://img.shields.io/github/issues/sahilkhatiwada/np-payment-sdk)](https://github.com/sahilkhatiwada/np-payment-sdk/issues)
-[![Last Commit](https://img.shields.io/github/last-commit/sahilkhatiwada/np-payment-sdk)](https://github.com/sahilkhatiwada/np-payment-sdk/commits/master)
-[![Build Status](https://github.com/sahilkhatiwada/np-payment-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkhatiwada/np-payment-sdk/actions/workflows/ci.yml)
-
+---
 
 ## Features
-- Unified API for Nepali and global payment gateways (eSewa, Khalti, ConnectIPS, IME Pay, Mobile Banking, Stripe, PayPal, Razorpay, and more)
-- Easy configuration for sandbox & production
-- Payment, verification, refund, subscription, invoice, and wallet flows
-- Event system for payment events and webhooks
-- Transaction history utilities
-- TypeScript support
-
-## Supported Gateways
-- eSewa
-- Khalti
-- ConnectIPS
-- IME Pay
-- Mobile Banking
-- Stripe (global)
-- PayPal (global)
-- Razorpay, Cashfree, Flutterwave, Paystack
-
-## Gateway Configuration & Usage
-
-Below are examples for each supported payment gateway.  
-**Note:** Never expose secret keys in frontend code. Always use these in your backend.
+- Unified API for multiple payment gateways
+- TypeScript-first, fully type-safe
+- Easy to extend and customize
+- Production-ready, linter/test/CI clean
 
 ---
 
-### **eSewa**
-```js
+## Installation
+
+```bash
+npm install np-payment-sdk
+# or
+yarn add np-payment-sdk
+```
+
+---
+
+## Usage Example
+
+```typescript
+import { PaymentSDK } from 'np-payment-sdk';
+
 const sdk = new PaymentSDK({
   gateways: {
-    esewa: {
-      clientId: 'YOUR_ESEWA_CLIENT_ID',
-      secret: 'YOUR_ESEWA_SECRET',
-      // baseUrl: 'https://uat.esewa.com.np' // optional, for sandbox/live
-    }
+    stripe: { publicKey: 'pk_test_...', secretKey: 'sk_test_...' },
+    razorpay: { keyId: 'rzp_test_...', keySecret: '...' },
+    // ...other gateways
   }
 });
+
+// Initiate a payment
+const result = await sdk.pay('stripe', {
+  amount: 100,
+  currency: 'USD',
+  cardNumber: '4242424242424242',
+  expiryMonth: '12',
+  expiryYear: '2025',
+  cvv: '123',
+  fullname: 'John Doe',
+  email: 'john@example.com',
+});
+
+console.log(result);
 ```
-- **Supports:** pay, verify, refund
 
 ---
 
-### **Khalti**
-```js
+## Full Usage Example
+
+```typescript
+import { PaymentSDK } from 'np-payment-sdk';
+
+// 1. Initialize the SDK with your gateway configs
 const sdk = new PaymentSDK({
   gateways: {
-    khalti: {
-      publicKey: 'YOUR_KHALTI_PUBLIC_KEY',
-      secretKey: 'YOUR_KHALTI_SECRET_KEY',
-      // baseUrl: 'https://khalti.com/api/v2' // optional
-    }
+    stripe: { publicKey: 'pk_test_...', secretKey: 'sk_test_...' },
+    razorpay: { keyId: 'rzp_test_...', keySecret: '...' },
+    paystack: { secretKey: 'sk_test_...' },
+    flutterwave: {
+      publicKey: 'FLWPUBK_TEST-...',
+      secretKey: 'FLWSECK_TEST-...',
+      encryptionKey: 'FLWENCK_TEST-...'
+    },
+    cashfree: { clientId: 'CF_CLIENT_ID', clientSecret: 'CF_SECRET', environment: 'TEST' },
+    paypal: { clientId: 'PAYPAL_CLIENT_ID', clientSecret: 'PAYPAL_SECRET', environment: 'sandbox' },
   }
 });
+
+// 2. Make a payment (Stripe example)
+const payResult = await sdk.pay('stripe', {
+  amount: 100,
+  currency: 'USD',
+  cardNumber: '4242424242424242',
+  expiryMonth: '12',
+  expiryYear: '2025',
+  cvv: '123',
+  fullname: 'John Doe',
+  email: 'john@example.com',
+});
+
+if (payResult.status === 'success') {
+  console.log('Payment successful:', payResult.params);
+} else {
+  console.error('Payment failed:', payResult.message, payResult.params);
+}
+
+// 3. Verify a payment
+const verifyResult = await sdk.verify('stripe', { transactionId: 'txn_123' });
+if (verifyResult.status === 'success') {
+  console.log('Verification successful:', verifyResult.params);
+} else {
+  console.error('Verification failed:', verifyResult.message, verifyResult.params);
+}
+
+// 4. Refund a payment
+const refundResult = await sdk.refund('stripe', { transactionId: 'txn_123', amount: 100 });
+if (refundResult.status === 'success') {
+  console.log('Refund successful:', refundResult.params);
+} else {
+  console.error('Refund failed:', refundResult.message, refundResult.params);
+}
 ```
-- **Supports:** pay, verify, refund
 
 ---
 
-### **ConnectIPS**
-```js
-const sdk = new PaymentSDK({
-  gateways: {
-    connectips: {
-      clientId: 'YOUR_CONNECTIPS_CLIENT_ID',
-      secret: 'YOUR_CONNECTIPS_SECRET',
-      // baseUrl: 'https://uat.connectips.com' // optional
-    }
-  }
+## Advanced Usage Examples
+
+### Subscriptions (where supported)
+```typescript
+// Create a subscription (Stripe or Razorpay example)
+const subResult = await sdk.subscribe('stripe', {
+  planId: 'plan_123',
+  customerId: 'cus_123',
+});
+if (subResult.status === 'active') {
+  console.log('Subscription active:', subResult.params);
+} else {
+  console.error('Subscription failed:', subResult.message, subResult.params);
+}
+```
+
+### Invoices (where supported)
+```typescript
+// Create an invoice (Stripe or Razorpay example)
+const invoiceResult = await sdk.createInvoice('stripe', {
+  amount: 100,
+  currency: 'USD',
+  customerId: 'cus_123',
+});
+if (invoiceResult.status === 'created') {
+  console.log('Invoice created:', invoiceResult.params);
+} else {
+  console.error('Invoice creation failed:', invoiceResult.message, invoiceResult.params);
+}
+```
+
+### Event Handling (if supported)
+```typescript
+// Listen for payment events (if your SDK exposes an event bus)
+sdk.eventBus?.on('pay', ({ gateway, params, result }) => {
+  console.log(`Payment event for ${gateway}:`, result);
 });
 ```
-- **Supports:** pay, verify, refund
 
----
+### Custom Gateway Registration
+```typescript
+import { IPaymentGateway } from 'np-payment-sdk';
 
-### **IME Pay**
-```js
-const sdk = new PaymentSDK({
-  gateways: {
-    imepay: {
-      merchantCode: 'YOUR_IMEPAY_MERCHANT_CODE',
-      apiKey: 'YOUR_IMEPAY_API_KEY',
-      // baseUrl: 'https://staging.imepay.com.np' // optional
-    }
-  }
-});
+class MyCustomGateway implements IPaymentGateway {
+  async pay(params) { /* ... */ }
+  async verify(params) { /* ... */ }
+  async refund(params) { /* ... */ }
+  // ...other methods as needed
+}
+
+sdk.registerProvider('mycustom', new MyCustomGateway(/* config */));
+// Now you can use: await sdk.pay('mycustom', { ... })
 ```
-- **Supports:** pay, verify, refund
 
----
+### Environment Variables & Secrets
 
-### **Mobile Banking**
-```js
-const sdk = new PaymentSDK({
-  gateways: {
-    mobilebanking: {
-      bankId: 'YOUR_BANK_ID',
-      apiKey: 'YOUR_BANK_API_KEY',
-      // baseUrl: 'https://api.mobilebanking.com.np' // optional
-    }
-  }
-});
-```
-- **Supports:** pay, verify, refund
+**Best practice:** Store all sensitive keys in environment variables and load them in your config:
 
----
-
-### **Stripe (Global)**
-```js
+```typescript
 const sdk = new PaymentSDK({
   gateways: {
     stripe: {
-      apiKey: 'sk_live_...' // Secret key from Stripe dashboard
-    }
+      publicKey: process.env.STRIPE_PUBLIC_KEY!,
+      secretKey: process.env.STRIPE_SECRET_KEY!,
+    },
+    // ...other gateways
   }
 });
 ```
-- **Supports:** pay, verify, refund, subscription, invoice
+
+- Use a `.env` file and a package like `dotenv` to load variables in development.
+- Never commit secrets to version control.
 
 ---
 
-### **PayPal (Global)**
-```js
+## Usage by Gateway
+
+### Stripe
+```typescript
+import { PaymentSDK } from 'np-payment-sdk';
+
 const sdk = new PaymentSDK({
   gateways: {
-    paypal: {
-      clientId: 'YOUR_PAYPAL_CLIENT_ID',
-      clientSecret: 'YOUR_PAYPAL_CLIENT_SECRET',
-      environment: 'sandbox' // or 'production'
-    }
+    stripe: { publicKey: 'pk_test_...', secretKey: 'sk_test_...' },
   }
 });
+
+// Pay
+await sdk.pay('stripe', { /* ...params... */ });
+// Verify
+await sdk.verify('stripe', { transactionId: '...' });
+// Refund
+await sdk.refund('stripe', { transactionId: '...', amount: 100 });
+// Subscription
+await sdk.subscribe('stripe', { planId: 'plan_123', customerId: 'cus_123' });
+// Invoice
+await sdk.createInvoice('stripe', { amount: 100, currency: 'USD', customerId: 'cus_123' });
+// Wallet (not supported)
 ```
-- **Supports:** pay, verify, refund
 
 ---
 
-### **Razorpay (Global)**
-```js
+### Razorpay
+```typescript
 const sdk = new PaymentSDK({
   gateways: {
-    razorpay: {
-      keyId: 'YOUR_RAZORPAY_KEY_ID',
-      keySecret: 'YOUR_RAZORPAY_KEY_SECRET'
-    }
+    razorpay: { keyId: 'rzp_test_...', keySecret: '...' },
   }
 });
+
+// Pay
+await sdk.pay('razorpay', { /* ...params... */ });
+// Verify
+await sdk.verify('razorpay', { transactionId: '...' });
+// Refund
+await sdk.refund('razorpay', { transactionId: '...', amount: 100 });
+// Subscription
+await sdk.subscribe('razorpay', { planId: 'plan_123', customerId: 'cus_123' });
+// Invoice
+await sdk.createInvoice('razorpay', { amount: 100, currency: 'INR', customerId: 'cus_123' });
+// Wallet (not supported)
 ```
-- **Supports:** pay, verify, refund, subscription, invoice
 
 ---
 
-### **Cashfree (Global)**
-```js
+### Paystack
+```typescript
 const sdk = new PaymentSDK({
   gateways: {
-    cashfree: {
-      clientId: 'YOUR_CASHFREE_CLIENT_ID',
-      clientSecret: 'YOUR_CASHFREE_CLIENT_SECRET',
-      environment: 'TEST' // or 'PROD'
-    }
+    paystack: { secretKey: 'sk_test_...' },
   }
 });
+
+// Pay
+await sdk.pay('paystack', { /* ...params... */ });
+// Verify
+await sdk.verify('paystack', { transactionId: '...' });
+// Refund
+await sdk.refund('paystack', { transactionId: '...', amount: 100 });
+// Subscription/Invoice/Wallet (not supported)
 ```
-- **Supports:** pay, verify, refund
 
 ---
 
-### **Flutterwave (Global)**
-```js
+### Flutterwave
+```typescript
 const sdk = new PaymentSDK({
   gateways: {
     flutterwave: {
-      publicKey: 'YOUR_FLUTTERWAVE_PUBLIC_KEY',
-      secretKey: 'YOUR_FLUTTERWAVE_SECRET_KEY',
-      encryptionKey: 'YOUR_FLUTTERWAVE_ENCRYPTION_KEY'
-    }
+      publicKey: 'FLWPUBK_TEST-...',
+      secretKey: 'FLWSECK_TEST-...',
+      encryptionKey: 'FLWENCK_TEST-...'
+    },
   }
 });
+
+// Pay
+await sdk.pay('flutterwave', { /* ...params... */ });
+// Verify
+await sdk.verify('flutterwave', { transactionId: '...' });
+// Refund
+await sdk.refund('flutterwave', { transactionId: '...', amount: 100 });
+// Subscription/Invoice/Wallet (not supported)
 ```
-- **Supports:** pay, verify, refund
 
 ---
 
-### **Paystack (Global)**
-```js
+### Cashfree
+```typescript
 const sdk = new PaymentSDK({
   gateways: {
-    paystack: {
-      secretKey: 'YOUR_PAYSTACK_SECRET_KEY'
-    }
+    cashfree: { clientId: 'CF_CLIENT_ID', clientSecret: 'CF_SECRET', environment: 'TEST' },
   }
 });
+
+// Pay
+await sdk.pay('cashfree', { /* ...params... */ });
+// Verify
+await sdk.verify('cashfree', { transactionId: '...' });
+// Refund
+await sdk.refund('cashfree', { transactionId: '...', amount: 100 });
+// Subscription/Invoice/Wallet (not supported)
 ```
-- **Supports:** pay, verify, refund
 
 ---
 
-## Usage Pattern (All Gateways)
-```js
-// Initiate a payment
-const result = await sdk.pay({
-  gateway: 'esewa', // or 'khalti', 'stripe', etc.
-  amount: 1000,
-  currency: 'NPR', // or 'USD', 'INR', etc.
-  returnUrl: 'https://yourapp.com/payment/callback',
-  // ...other params as required by the gateway
+### PayPal
+```typescript
+const sdk = new PaymentSDK({
+  gateways: {
+    paypal: { clientId: 'PAYPAL_CLIENT_ID', clientSecret: 'PAYPAL_SECRET', environment: 'sandbox' },
+  }
+});
+
+// Pay
+await sdk.pay('paypal', { /* ...params... */ });
+// Verify
+await sdk.verify('paypal', { transactionId: '...' });
+// Refund
+await sdk.refund('paypal', { transactionId: '...', amount: 100 });
+// Subscription/Invoice/Wallet (not supported)
+```
+
+---
+
+## Method Parameters
+
+### pay
+| Parameter      | Type    | Description                       |
+|---------------|---------|-----------------------------------|
+| amount        | number  | Amount to charge                  |
+| currency      | string  | Currency code (e.g., 'USD')       |
+| cardNumber    | string  | Card number (if applicable)       |
+| expiryMonth   | string  | Card expiry month (if applicable) |
+| expiryYear    | string  | Card expiry year (if applicable)  |
+| cvv           | string  | Card CVV (if applicable)          |
+| fullname      | string  | Cardholder name                   |
+| email         | string  | Customer email                    |
+| transactionId | string  | (Optional) Transaction reference  |
+| returnUrl     | string  | (Optional) Redirect/callback URL  |
+| ...           | ...     | Other gateway-specific params     |
+
+### verify
+| Parameter      | Type    | Description                       |
+|---------------|---------|-----------------------------------|
+| transactionId  | string  | Transaction reference/ID          |
+| ...            | ...     | Other gateway-specific params     |
+
+### refund
+| Parameter      | Type    | Description                       |
+|---------------|---------|-----------------------------------|
+| transactionId  | string  | Transaction reference/ID          |
+| amount         | number  | Amount to refund                  |
+| ...            | ...     | Other gateway-specific params     |
+
+### subscribe (where supported)
+| Parameter      | Type    | Description                       |
+|---------------|---------|-----------------------------------|
+| planId         | string  | Subscription plan ID              |
+| customerId     | string  | Customer ID                       |
+| ...            | ...     | Other gateway-specific params     |
+
+### createInvoice (where supported)
+| Parameter      | Type    | Description                       |
+|---------------|---------|-----------------------------------|
+| amount         | number  | Invoice amount                    |
+| currency       | string  | Currency code                     |
+| customerId     | string  | Customer ID                       |
+| ...            | ...     | Other gateway-specific params     |
+
+---
+
+## Advanced Usage
+
+### Error Handling
+All methods return a result object with `status`, `params`, and `message`. Always check `status`:
+
+```typescript
+const result = await sdk.pay('stripe', { ... });
+if (result.status === 'success') {
+  // handle success
+} else {
+  // handle failure
+  console.error(result.message, result.params);
+}
+```
+
+### Custom Gateway Integration
+You can add your own gateway by implementing the `IPaymentGateway` interface:
+
+```typescript
+import { IPaymentGateway } from 'np-payment-sdk';
+
+class MyCustomGateway implements IPaymentGateway {
+  // implement pay, verify, refund, etc.
+}
+
+sdk.registerProvider('mycustom', new MyCustomGateway(/* config */));
+```
+
+---
+
+## Event System (if supported)
+If your SDK supports events, you can listen for payment lifecycle events:
+
+```typescript
+eventBus.on('pay', ({ gateway, params, result }) => {
+  // handle payment event
 });
 ```
 
-## Multi-Currency & Payment Types
-- All payment methods accept a `currency` parameter (e.g., 'USD', 'INR', 'NPR').
-- Unified methods: `pay`, `verify`, `refund`, `subscribe`, `createInvoice`, `wallet` (where supported by provider).
+---
 
-## Event System
-- Listen to events: `pay`, `verify`, `refund`, `subscribe`, `createInvoice`, `wallet`.
-- Example:
-  ```typescript
-  eventBus.on('pay', ({ gateway, params, result }) => {
-    // handle payment event
-  });
-  ```
+## Security Best Practices
+- **Never expose secret keys in frontend code.** Always use them in your backend/server.
+- Use environment variables to manage secrets and configuration.
+- Rotate keys regularly and follow gateway provider security guidelines.
 
-## Adding/Using Providers
-- Built-in: eSewa, Khalti, ConnectIPS, IME Pay, Mobile Banking
-- Global: Stripe (with `StripeGateway`), more coming soon
-- Register custom providers at runtime:
-  ```typescript
-  sdk.registerProvider('custom', new MyCustomGateway(...));
-  ```
+---
 
-## Migration Guide
-- Old: `sdk.pay({ gateway: GatewayType.ESEWA, ... })`
-- New: Same, but now you can use any provider key (including global ones) and listen to events.
-- All types are now unified and support multi-currency and new payment types.
+## Supported Gateways
+- Stripe
+- Razorpay
+- Paystack
+- Flutterwave
+- Cashfree
+- PayPal
 
-## Examples
-- [Basic Usage](examples/basic-usage.ts)
-- [Express MVC Example](examples/express-server/README.md)
-- [Frontend (React)](examples/frontend-react-usage.md)
-- [Next.js](examples/nextjs-usage.md)
+---
 
-## 🤝 Contributing
-Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
+## Testing
 
-Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
+```bash
+npm test
+```
 
-## 📄 License
+---
 
-The MIT License (MIT). Please see [License File](LICENSE) for more information.
+## Linting
+
+```bash
+npm run lint
+```
+
+---
+
+## Contributing
+
+1. Fork the repo and create your branch from `master`.
+2. Ensure code is linter/test/CI clean before submitting a PR.
+3. Add/Update tests for new features or bug fixes.
+
+---
+
+## License
+
+MIT

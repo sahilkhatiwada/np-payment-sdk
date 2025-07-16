@@ -1,5 +1,5 @@
 import { PaystackGateway } from '../../src/global-gateways/paystack';
-import { PaymentParams, VerifyParams, RefundParams, SubscriptionParams, InvoiceParams, WalletParams } from '../../src/types/gateway';
+import { PaymentParams, VerifyParams, RefundParams } from '../../src/types/gateway';
 
 const mockTransaction = { initialize: jest.fn(), verify: jest.fn() };
 const mockRefund = { create: jest.fn() };
