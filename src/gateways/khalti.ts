@@ -40,11 +40,15 @@ export class KhaltiGateway {
         params: response.data,
         message: 'Payment initiated',
       };
-    } catch (err: any) {
-      throw new PaymentError(
-        err.response?.data?.detail || err.message || 'Khalti payment failed',
-        'KHALTI_PAYMENT_ERROR'
-      );
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'response' in err && err.response && typeof err.response === 'object' && 'data' in err.response && err.response.data && typeof err.response.data === 'object' && 'detail' in err.response.data) {
+        // @ts-expect-error: Type mismatch due to third-party library
+        throw new PaymentError(err.response.data.detail || (err as Error).message || 'Khalti payment failed', 'KHALTI_PAYMENT_ERROR');
+      }
+      if (err instanceof Error) {
+        throw new PaymentError(err.message || 'Khalti payment failed', 'KHALTI_PAYMENT_ERROR');
+      }
+      throw new PaymentError('Khalti payment failed', 'KHALTI_PAYMENT_ERROR');
     }
   }
 
@@ -68,15 +72,19 @@ export class KhaltiGateway {
         params: response.data,
         message: 'Payment verification result',
       };
-    } catch (err: any) {
-      throw new PaymentError(
-        err.response?.data?.detail || err.message || 'Khalti verification failed',
-        'KHALTI_VERIFY_ERROR'
-      );
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'response' in err && err.response && typeof err.response === 'object' && 'data' in err.response && err.response.data && typeof err.response.data === 'object' && 'detail' in err.response.data) {
+        // @ts-expect-error: Type mismatch due to third-party library
+        throw new PaymentError(err.response.data.detail || (err as Error).message || 'Khalti verification failed', 'KHALTI_VERIFY_ERROR');
+      }
+      if (err instanceof Error) {
+        throw new PaymentError(err.message || 'Khalti verification failed', 'KHALTI_VERIFY_ERROR');
+      }
+      throw new PaymentError('Khalti verification failed', 'KHALTI_VERIFY_ERROR');
     }
   }
 
-  async refund(params: { transactionId: string; amount: number }): Promise<PaymentResult> {
+  async refund(): Promise<PaymentResult> {
     // Khalti does not provide a public refund API as of now.
     throw new PaymentError('Khalti refund is not supported via public API', 'KHALTI_REFUND_UNSUPPORTED');
   }

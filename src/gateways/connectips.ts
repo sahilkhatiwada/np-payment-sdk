@@ -1,4 +1,4 @@
-import { PaymentParams, PaymentResult, PaymentError } from '../types';
+import { PaymentParams, PaymentResult } from '../types';
 
 export interface ConnectIPSConfig {
   clientId: string;

@@ -41,7 +41,7 @@ describe('PayPalGateway', () => {
     };
     const result = await gateway.pay(params);
     if (result.status !== 'success') {
-      // eslint-disable-next-line no-console
+       
       console.error('Pay test result:', result);
     }
     expect(result.status).toBe('success');
@@ -74,7 +74,7 @@ describe('PayPalGateway', () => {
     };
     const result = await gateway.refund(params);
     if (result.status !== 'success') {
-      // eslint-disable-next-line no-console
+       
       console.error('Refund test result:', result);
     }
     expect(result.status).toBe('success');
@@ -82,20 +82,17 @@ describe('PayPalGateway', () => {
   });
 
   it('should return failure for subscribe', async () => {
-    const params: SubscriptionParams = { gateway: 'paypal', planId: 'plan', customerId: 'cus' };
-    const result = await gateway.subscribe(params);
+    const result = await gateway.subscribe({});
     expect(result.status).toBe('cancelled');
   });
 
   it('should return failure for createInvoice', async () => {
-    const params: InvoiceParams = { gateway: 'paypal', amount: 10, currency: 'USD', customerId: 'cus' };
-    const result = await gateway.createInvoice(params);
+    const result = await gateway.createInvoice({});
     expect(result.status).toBe('cancelled');
   });
 
   it('should return failure for wallet', async () => {
-    const params: WalletParams = { gateway: 'paypal', customerId: 'cus', amount: 10, currency: 'USD' };
-    const result = await gateway.wallet(params);
+    const result = await gateway.wallet({});
     expect(result.status).toBe('failure');
   });
 }); 

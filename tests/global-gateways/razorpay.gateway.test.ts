@@ -77,7 +77,7 @@ describe('RazorpayGateway', () => {
 
   it('should return failure for wallet', async () => {
     const params: WalletParams = { gateway: 'razorpay', customerId: 'cus', amount: 10, currency: 'INR' };
-    const result = await gateway.wallet!(params);
+    const result = await gateway.wallet({});
     expect(result.status).toBe('failure');
   });
 }); 

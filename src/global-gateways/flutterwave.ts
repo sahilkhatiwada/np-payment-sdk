@@ -1,4 +1,4 @@
-import { IPaymentGateway, PaymentParams, PaymentResult, VerifyParams, RefundParams, SubscriptionParams, SubscriptionResult, InvoiceParams, InvoiceResult, WalletParams, WalletResult } from '../types/gateway';
+import { IPaymentGateway, PaymentParams, PaymentResult, VerifyParams, RefundParams, SubscriptionResult, InvoiceResult, WalletResult } from '../types/gateway';
 import Flutterwave from 'flutterwave-node-v3';
 
 /**
@@ -35,12 +35,20 @@ export class FlutterwaveGateway implements IPaymentGateway {
         params: response,
         message: response.message || 'Flutterwave payment initiated',
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          gateway: 'flutterwave',
+          status: 'failure',
+          params: { error: err.message },
+          message: err.message || 'Flutterwave payment failed',
+        };
+      }
       return {
         gateway: 'flutterwave',
         status: 'failure',
-        params: err,
-        message: err.message || 'Flutterwave payment failed',
+        params: { error: String(err) },
+        message: 'Flutterwave payment failed',
       };
     }
   }
@@ -57,12 +65,20 @@ export class FlutterwaveGateway implements IPaymentGateway {
         params: response.data,
         message: 'Flutterwave payment verification',
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          gateway: 'flutterwave',
+          status: 'failure',
+          params: { error: err.message },
+          message: err.message || 'Flutterwave verification failed',
+        };
+      }
       return {
         gateway: 'flutterwave',
         status: 'failure',
-        params: err,
-        message: err.message || 'Flutterwave verification failed',
+        params: { error: String(err) },
+        message: 'Flutterwave verification failed',
       };
     }
   }
@@ -83,12 +99,20 @@ export class FlutterwaveGateway implements IPaymentGateway {
         params: response,
         message: response.message || 'Flutterwave refund processed',
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          gateway: 'flutterwave',
+          status: 'failure',
+          params: { error: err.message },
+          message: err.message || 'Flutterwave refund failed',
+        };
+      }
       return {
         gateway: 'flutterwave',
         status: 'failure',
-        params: err,
-        message: err.message || 'Flutterwave refund failed',
+        params: { error: String(err) },
+        message: 'Flutterwave refund failed',
       };
     }
   }
@@ -96,7 +120,7 @@ export class FlutterwaveGateway implements IPaymentGateway {
   /**
    * Create a subscription (not implemented)
    */
-  async subscribe(params: SubscriptionParams): Promise<SubscriptionResult> {
+  async subscribe(params: any): Promise<SubscriptionResult> {
     return {
       gateway: 'flutterwave',
       status: 'cancelled',
@@ -108,7 +132,7 @@ export class FlutterwaveGateway implements IPaymentGateway {
   /**
    * Create an invoice (not implemented)
    */
-  async createInvoice(params: InvoiceParams): Promise<InvoiceResult> {
+  async createInvoice(params: any): Promise<InvoiceResult> {
     return {
       gateway: 'flutterwave',
       status: 'cancelled',
@@ -120,7 +144,7 @@ export class FlutterwaveGateway implements IPaymentGateway {
   /**
    * Wallet operations (not supported)
    */
-  async wallet(params: WalletParams): Promise<WalletResult> {
+  async wallet(params: any): Promise<WalletResult> {
     return {
       gateway: 'flutterwave',
       status: 'failure',

@@ -1,18 +1,17 @@
-import { IPaymentGateway, PaymentParams, PaymentResult, VerifyParams, RefundParams, SubscriptionParams, SubscriptionResult, InvoiceParams, InvoiceResult, WalletParams, WalletResult } from '../types/gateway';
+import { IPaymentGateway, PaymentParams, PaymentResult, VerifyParams, RefundParams, SubscriptionResult, InvoiceResult, WalletResult } from '../types/gateway';
 import { Cashfree } from 'cashfree-pg';
+import { CFEnvironment } from 'cashfree-pg/dist/configuration';
 
 /**
  * Cashfree payment gateway implementation (real)
  */
 export class CashfreeGateway implements IPaymentGateway {
-  private cashfree: any;
+  private cashfree: Cashfree;
 
-  constructor(private config: { clientId: string; clientSecret: string; environment?: 'TEST' | 'PROD' }) {
-    this.cashfree = new Cashfree({
-      env: config.environment || 'TEST',
-      clientId: config.clientId,
-      clientSecret: config.clientSecret,
-    } as any);
+  constructor(private config: { clientId: string; clientSecret: string; environment?: CFEnvironment }) {
+    const env: CFEnvironment = config.environment ?? CFEnvironment.SANDBOX;
+    // @ts-ignore
+    this.cashfree = new Cashfree(config.clientId, config.clientSecret, env);
   }
 
   /**
@@ -21,29 +20,34 @@ export class CashfreeGateway implements IPaymentGateway {
   async pay(params: PaymentParams): Promise<PaymentResult> {
     try {
       const order = await this.cashfree.PGCreateOrder({
-        orderAmount: params.amount,
-        orderCurrency: params.currency,
-        customerDetails: {
-          customerId: params.customerId,
-          customerEmail: params.email,
-          customerPhone: params.phone,
+        order_amount: Number(params.amount),
+        order_currency: params.currency,
+        customer_details: {
+          customer_id: String(params.customerId),
+          customer_email: String(params.email),
+          customer_phone: String(params.phone),
         },
-        orderNote: params.description,
-        returnUrl: params.returnUrl,
-        notifyUrl: params.notifyUrl || params.returnUrl,
       });
       return {
         gateway: 'cashfree',
         status: 'success',
-        params: order,
+        params: { orderId: order.data.order_id, orderStatus: order.data.order_status },
         message: 'Cashfree order created',
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          gateway: 'cashfree',
+          status: 'failure',
+          params: { error: err.message },
+          message: err.message || 'Cashfree payment failed',
+        };
+      }
       return {
         gateway: 'cashfree',
         status: 'failure',
-        params: err,
-        message: err.message || 'Cashfree payment failed',
+        params: { error: String(err) },
+        message: 'Cashfree payment failed',
       };
     }
   }
@@ -53,19 +57,27 @@ export class CashfreeGateway implements IPaymentGateway {
    */
   async verify(params: VerifyParams): Promise<PaymentResult> {
     try {
-      const order = await this.cashfree.PGFetchOrder({ orderId: params.transactionId });
+      const order = await this.cashfree.PGFetchOrder(params.transactionId);
       return {
         gateway: 'cashfree',
-        status: order.orderStatus === 'PAID' ? 'success' : 'failure',
-        params: order,
+        status: 'success',
+        params: { orderId: order.data.order_id, orderStatus: order.data.order_status },
         message: 'Cashfree order verification',
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          gateway: 'cashfree',
+          status: 'failure',
+          params: { error: err.message },
+          message: err.message || 'Cashfree verification failed',
+        };
+      }
       return {
         gateway: 'cashfree',
         status: 'failure',
-        params: err,
-        message: err.message || 'Cashfree verification failed',
+        params: { error: String(err) },
+        message: 'Cashfree verification failed',
       };
     }
   }
@@ -75,23 +87,27 @@ export class CashfreeGateway implements IPaymentGateway {
    */
   async refund(params: RefundParams): Promise<PaymentResult> {
     try {
-      const refund = await this.cashfree.PGOrderRefund({
-        orderId: params.transactionId,
-        refundAmount: params.amount,
-        refundId: params.refundId || `refund_${Date.now()}`,
-      });
+      const refund = await (this.cashfree as any).PGOrderRefund(params.transactionId, params.amount);
       return {
         gateway: 'cashfree',
         status: 'success',
-        params: refund,
-        message: 'Cashfree refund processed',
+        params: { refundId: refund.data.refund_id, refundStatus: refund.data.refund_status },
+        message: 'Cashfree refund successful',
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          gateway: 'cashfree',
+          status: 'failure',
+          params: { error: err.message },
+          message: err.message || 'Cashfree refund failed',
+        };
+      }
       return {
         gateway: 'cashfree',
         status: 'failure',
-        params: err,
-        message: err.message || 'Cashfree refund failed',
+        params: { error: String(err) },
+        message: 'Cashfree refund failed',
       };
     }
   }
@@ -99,7 +115,7 @@ export class CashfreeGateway implements IPaymentGateway {
   /**
    * Create a subscription (not implemented)
    */
-  async subscribe(params: SubscriptionParams): Promise<SubscriptionResult> {
+  async subscribe(params: any): Promise<SubscriptionResult> {
     return {
       gateway: 'cashfree',
       status: 'cancelled',
@@ -111,7 +127,7 @@ export class CashfreeGateway implements IPaymentGateway {
   /**
    * Create an invoice (not implemented)
    */
-  async createInvoice(params: InvoiceParams): Promise<InvoiceResult> {
+  async createInvoice(params: any): Promise<InvoiceResult> {
     return {
       gateway: 'cashfree',
       status: 'cancelled',
@@ -123,7 +139,7 @@ export class CashfreeGateway implements IPaymentGateway {
   /**
    * Wallet operations (not supported)
    */
-  async wallet(params: WalletParams): Promise<WalletResult> {
+  async wallet(params: any): Promise<WalletResult> {
     return {
       gateway: 'cashfree',
       status: 'failure',

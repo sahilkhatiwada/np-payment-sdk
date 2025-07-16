@@ -57,20 +57,17 @@ describe('PaystackGateway', () => {
   });
 
   it('should return cancelled for subscribe', async () => {
-    const params: SubscriptionParams = { gateway: 'paystack', planId: 'plan', customerId: 'cus' };
-    const result = await gateway.subscribe(params);
+    const result = await gateway.subscribe({});
     expect(result.status).toBe('cancelled');
   });
 
   it('should return cancelled for createInvoice', async () => {
-    const params: InvoiceParams = { gateway: 'paystack', amount: 10, currency: 'NGN', customerId: 'cus' };
-    const result = await gateway.createInvoice(params);
+    const result = await gateway.createInvoice({});
     expect(result.status).toBe('cancelled');
   });
 
   it('should return failure for wallet', async () => {
-    const params: WalletParams = { gateway: 'paystack', customerId: 'cus', amount: 10, currency: 'NGN' };
-    const result = await gateway.wallet(params);
+    const result = await gateway.wallet({});
     expect(result.status).toBe('failure');
   });
 }); 

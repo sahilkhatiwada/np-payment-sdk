@@ -36,8 +36,11 @@ export class EsewaGateway {
         params: payload,
         message: 'Payment initiated (mock)'
       };
-    } catch (err: any) {
-      throw new PaymentError(err.message || 'eSewa payment failed', 'ESEWA_PAYMENT_ERROR');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        throw new PaymentError(err.message || 'eSewa payment failed', 'ESEWA_PAYMENT_ERROR');
+      }
+      throw new PaymentError('eSewa payment failed', 'ESEWA_PAYMENT_ERROR');
     }
   }
 
@@ -51,8 +54,11 @@ export class EsewaGateway {
         params,
         message: 'Payment verified (mock)'
       };
-    } catch (err: any) {
-      throw new PaymentError(err.message || 'eSewa verification failed', 'ESEWA_VERIFY_ERROR');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        throw new PaymentError(err.message || 'eSewa verification failed', 'ESEWA_VERIFY_ERROR');
+      }
+      throw new PaymentError('eSewa verification failed', 'ESEWA_VERIFY_ERROR');
     }
   }
 
@@ -66,8 +72,11 @@ export class EsewaGateway {
         params,
         message: 'Refund processed (mock)'
       };
-    } catch (err: any) {
-      throw new PaymentError(err.message || 'eSewa refund failed', 'ESEWA_REFUND_ERROR');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        throw new PaymentError(err.message || 'eSewa refund failed', 'ESEWA_REFUND_ERROR');
+      }
+      throw new PaymentError('eSewa refund failed', 'ESEWA_REFUND_ERROR');
     }
   }
 } 

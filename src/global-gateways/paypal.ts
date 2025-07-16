@@ -1,4 +1,4 @@
-import { IPaymentGateway, PaymentParams, PaymentResult, VerifyParams, RefundParams, SubscriptionParams, SubscriptionResult, InvoiceParams, InvoiceResult, WalletParams, WalletResult } from '../types/gateway';
+import { IPaymentGateway, PaymentParams, PaymentResult, VerifyParams, RefundParams, SubscriptionResult, InvoiceResult, WalletResult } from '../types/gateway';
 import * as paypal from '@paypal/checkout-server-sdk';
 
 /**
@@ -50,12 +50,20 @@ export class PayPalGateway implements IPaymentGateway {
           message: 'PayPal order not created',
         };
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          gateway: 'paypal',
+          status: 'failure',
+          params: { error: err.message },
+          message: err.message || 'PayPal payment failed',
+        };
+      }
       return {
         gateway: 'paypal',
         status: 'failure',
-        params: err,
-        message: err.message || 'PayPal payment failed',
+        params: {},
+        message: 'PayPal payment failed',
       };
     }
   }
@@ -73,12 +81,20 @@ export class PayPalGateway implements IPaymentGateway {
         params: order.result,
         message: 'PayPal order verification',
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          gateway: 'paypal',
+          status: 'failure',
+          params: { error: err.message },
+          message: err.message || 'PayPal verification failed',
+        };
+      }
       return {
         gateway: 'paypal',
         status: 'failure',
-        params: err,
-        message: err.message || 'PayPal verification failed',
+        params: {},
+        message: 'PayPal verification failed',
       };
     }
   }
@@ -115,12 +131,20 @@ export class PayPalGateway implements IPaymentGateway {
           message: 'PayPal refund not completed',
         };
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          gateway: 'paypal',
+          status: 'failure',
+          params: { error: err.message },
+          message: err.message || 'PayPal refund failed',
+        };
+      }
       return {
         gateway: 'paypal',
         status: 'failure',
-        params: err,
-        message: err.message || 'PayPal refund failed',
+        params: {},
+        message: 'PayPal refund failed',
       };
     }
   }
@@ -128,7 +152,7 @@ export class PayPalGateway implements IPaymentGateway {
   /**
    * Create a subscription (not implemented)
    */
-  async subscribe(params: SubscriptionParams): Promise<SubscriptionResult> {
+  async subscribe(params: any): Promise<SubscriptionResult> {
     return {
       gateway: 'paypal',
       status: 'cancelled',
@@ -140,7 +164,7 @@ export class PayPalGateway implements IPaymentGateway {
   /**
    * Create an invoice (not implemented)
    */
-  async createInvoice(params: InvoiceParams): Promise<InvoiceResult> {
+  async createInvoice(params: any): Promise<InvoiceResult> {
     return {
       gateway: 'paypal',
       status: 'cancelled',
@@ -152,7 +176,7 @@ export class PayPalGateway implements IPaymentGateway {
   /**
    * Wallet operations (not supported)
    */
-  async wallet(params: WalletParams): Promise<WalletResult> {
+  async wallet(params: any): Promise<WalletResult> {
     return {
       gateway: 'paypal',
       status: 'failure',

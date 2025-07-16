@@ -62,7 +62,7 @@ describe('StripeGateway', () => {
       planId: 'plan_123',
       customerId: 'cus_123',
     };
-    const result = await gateway.subscribe!(params);
+    const result = await gateway.subscribe({ gateway: 'stripe', planId: 'plan', customerId: 'cus' });
     expect(result.status).toBe('active');
     expect(result.params.id).toBe('sub_123');
   });
@@ -74,7 +74,7 @@ describe('StripeGateway', () => {
       currency: 'USD',
       customerId: 'cus_123',
     };
-    const result = await gateway.createInvoice!(params);
+    const result = await gateway.createInvoice({ gateway: 'stripe', amount: 100, currency: 'USD', customerId: 'cus' });
     expect(result.status).toBe('created');
     expect(result.params.id).toBe('in_123');
   });
@@ -86,7 +86,7 @@ describe('StripeGateway', () => {
       amount: 10,
       currency: 'USD',
     };
-    const result = await gateway.wallet!(params);
+    const result = await gateway.wallet({ gateway: 'stripe', customerId: 'cus', amount: 100, currency: 'USD' });
     expect(result.status).toBe('failure');
   });
 }); 

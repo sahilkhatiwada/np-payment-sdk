@@ -36,7 +36,7 @@ describe('FlutterwaveGateway', () => {
     };
     const result = await gateway.pay(params);
     expect(result.status).toBe('success');
-    expect(result.params.data.id).toBe('tx_123');
+    expect((result.params.data as any).id).toBe('tx_123');
   });
 
   it('should verify a payment', async () => {
@@ -60,24 +60,23 @@ describe('FlutterwaveGateway', () => {
     };
     const result = await gateway.refund(params);
     expect(result.status).toBe('success');
-    expect(result.params.data.id).toBe('refund_123');
+    // Narrow or cast result.params.data to expected type
+    const data = result.params.data as { id: string };
+    expect(data.id).toBe('refund_123');
   });
 
   it('should return cancelled for subscribe', async () => {
-    const params: SubscriptionParams = { gateway: 'flutterwave', planId: 'plan', customerId: 'cus' };
-    const result = await gateway.subscribe(params);
+    const result = await gateway.subscribe({ gateway: 'flutterwave', planId: 'plan', customerId: 'cus' });
     expect(result.status).toBe('cancelled');
   });
 
   it('should return cancelled for createInvoice', async () => {
-    const params: InvoiceParams = { gateway: 'flutterwave', amount: 10, currency: 'NGN', customerId: 'cus' };
-    const result = await gateway.createInvoice(params);
+    const result = await gateway.createInvoice({ gateway: 'flutterwave', amount: 100, currency: 'NGN', customerId: 'cus' });
     expect(result.status).toBe('cancelled');
   });
 
   it('should return failure for wallet', async () => {
-    const params: WalletParams = { gateway: 'flutterwave', customerId: 'cus', amount: 10, currency: 'NGN' };
-    const result = await gateway.wallet(params);
+    const result = await gateway.wallet({ gateway: 'flutterwave', customerId: 'cus', amount: 100, currency: 'NGN' });
     expect(result.status).toBe('failure');
   });
 }); 

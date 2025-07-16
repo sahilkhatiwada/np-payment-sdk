@@ -1,11 +1,11 @@
-import { IPaymentGateway, PaymentParams, PaymentResult, VerifyParams, RefundParams, SubscriptionParams, SubscriptionResult, InvoiceParams, InvoiceResult, WalletParams, WalletResult } from '../types/gateway';
+import { IPaymentGateway, PaymentParams, PaymentResult, VerifyParams, RefundParams, SubscriptionResult, InvoiceResult, WalletResult } from '../types/gateway';
 import Paystack from 'paystack-api';
 
 /**
  * Paystack payment gateway implementation (real)
  */
 export class PaystackGateway implements IPaymentGateway {
-  private paystack: any;
+  private paystack: ReturnType<typeof Paystack>;
 
   constructor(private config: { secretKey: string }) {
     this.paystack = Paystack(config.secretKey);
@@ -29,12 +29,20 @@ export class PaystackGateway implements IPaymentGateway {
         params: response.data,
         message: response.message || 'Paystack transaction initialized',
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          gateway: 'paystack',
+          status: 'failure',
+          params: { error: err.message },
+          message: err.message || 'Paystack payment failed',
+        };
+      }
       return {
         gateway: 'paystack',
         status: 'failure',
-        params: err,
-        message: err.message || 'Paystack payment failed',
+        params: { error: String(err) },
+        message: 'Paystack payment failed',
       };
     }
   }
@@ -51,12 +59,20 @@ export class PaystackGateway implements IPaymentGateway {
         params: response.data,
         message: 'Paystack payment verification',
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          gateway: 'paystack',
+          status: 'failure',
+          params: { error: err.message },
+          message: err.message || 'Paystack verification failed',
+        };
+      }
       return {
         gateway: 'paystack',
         status: 'failure',
-        params: err,
-        message: err.message || 'Paystack verification failed',
+        params: { error: String(err) },
+        message: 'Paystack verification failed',
       };
     }
   }
@@ -76,12 +92,20 @@ export class PaystackGateway implements IPaymentGateway {
         params: response.data,
         message: response.message || 'Paystack refund processed',
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          gateway: 'paystack',
+          status: 'failure',
+          params: { error: err.message },
+          message: err.message || 'Paystack refund failed',
+        };
+      }
       return {
         gateway: 'paystack',
         status: 'failure',
-        params: err,
-        message: err.message || 'Paystack refund failed',
+        params: { error: String(err) },
+        message: 'Paystack refund failed',
       };
     }
   }
@@ -89,7 +113,7 @@ export class PaystackGateway implements IPaymentGateway {
   /**
    * Create a subscription (not implemented)
    */
-  async subscribe(params: SubscriptionParams): Promise<SubscriptionResult> {
+  async subscribe(params: any): Promise<SubscriptionResult> {
     return {
       gateway: 'paystack',
       status: 'cancelled',
@@ -101,7 +125,7 @@ export class PaystackGateway implements IPaymentGateway {
   /**
    * Create an invoice (not implemented)
    */
-  async createInvoice(params: InvoiceParams): Promise<InvoiceResult> {
+  async createInvoice(params: any): Promise<InvoiceResult> {
     return {
       gateway: 'paystack',
       status: 'cancelled',
@@ -113,7 +137,7 @@ export class PaystackGateway implements IPaymentGateway {
   /**
    * Wallet operations (not supported)
    */
-  async wallet(params: WalletParams): Promise<WalletResult> {
+  async wallet(params: any): Promise<WalletResult> {
     return {
       gateway: 'paystack',
       status: 'failure',

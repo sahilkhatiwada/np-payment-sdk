@@ -1,15 +1,15 @@
-type EventHandler = (...args: any[]) => void;
+type EventHandler<T = unknown> = (...args: T[]) => void;
 
 /**
  * Simple event bus for SDK events
  */
-export class EventBus {
-  private listeners: { [event: string]: EventHandler[] } = {};
+export class EventBus<T = unknown> {
+  private listeners: { [event: string]: EventHandler<T>[] } = {};
 
   /**
    * Register an event listener
    */
-  on(event: string, handler: EventHandler) {
+  on(event: string, handler: EventHandler<T>) {
     if (!this.listeners[event]) this.listeners[event] = [];
     this.listeners[event].push(handler);
   }
@@ -17,7 +17,7 @@ export class EventBus {
   /**
    * Remove an event listener
    */
-  off(event: string, handler: EventHandler) {
+  off(event: string, handler: EventHandler<T>) {
     if (!this.listeners[event]) return;
     this.listeners[event] = this.listeners[event].filter(h => h !== handler);
   }
@@ -25,7 +25,7 @@ export class EventBus {
   /**
    * Emit an event
    */
-  emit(event: string, ...args: any[]) {
+  emit(event: string, ...args: T[]) {
     if (!this.listeners[event]) return;
     for (const handler of this.listeners[event]) {
       handler(...args);

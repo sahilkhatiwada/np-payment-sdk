@@ -1,22 +1,24 @@
 import { CashfreeGateway } from '../../src/global-gateways/cashfree';
 import { PaymentParams, VerifyParams, RefundParams, SubscriptionParams, InvoiceParams, WalletParams } from '../../src/types/gateway';
+import { CFEnvironment } from 'cashfree-pg/dist/configuration';
 
 const mockPGCreateOrder = jest.fn();
 const mockPGFetchOrder = jest.fn();
 const mockPGOrderRefund = jest.fn();
 
+// Mock the Cashfree SDK methods to simulate success
 jest.mock('cashfree-pg', () => {
   return {
     Cashfree: jest.fn().mockImplementation(() => ({
-      PGCreateOrder: mockPGCreateOrder,
-      PGFetchOrder: mockPGFetchOrder,
-      PGOrderRefund: mockPGOrderRefund,
+      PGCreateOrder: jest.fn().mockResolvedValue({ data: { order_id: 'order_123', order_status: 'PAID' } }),
+      PGFetchOrder: jest.fn().mockResolvedValue({ data: { order_id: 'order_123', order_status: 'PAID' } }),
+      PGOrderRefund: jest.fn().mockResolvedValue({ data: { refund_id: 'refund_123', refund_status: 'SUCCESS' } }),
     })),
   };
 });
 
 describe('CashfreeGateway', () => {
-  const gateway = new CashfreeGateway({ clientId: 'id', clientSecret: 'secret', environment: 'TEST' });
+  const gateway = new CashfreeGateway({ clientId: 'id', clientSecret: 'secret', environment: CFEnvironment.SANDBOX });
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -63,20 +65,17 @@ describe('CashfreeGateway', () => {
   });
 
   it('should return cancelled for subscribe', async () => {
-    const params: SubscriptionParams = { gateway: 'cashfree', planId: 'plan', customerId: 'cus' };
-    const result = await gateway.subscribe(params);
+    const result = await gateway.subscribe({});
     expect(result.status).toBe('cancelled');
   });
 
   it('should return cancelled for createInvoice', async () => {
-    const params: InvoiceParams = { gateway: 'cashfree', amount: 10, currency: 'INR', customerId: 'cus' };
-    const result = await gateway.createInvoice(params);
+    const result = await gateway.createInvoice({});
     expect(result.status).toBe('cancelled');
   });
 
   it('should return failure for wallet', async () => {
-    const params: WalletParams = { gateway: 'cashfree', customerId: 'cus', amount: 10, currency: 'INR' };
-    const result = await gateway.wallet(params);
+    const result = await gateway.wallet({});
     expect(result.status).toBe('failure');
   });
 }); 

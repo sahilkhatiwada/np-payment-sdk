@@ -1,8 +1,9 @@
 import { PaymentSDK, GatewayType } from '../src';
 import { PaymentError } from '../src/types';
 import { paymentWebhookHandler } from '../src/handlers/webhook';
-import express, { Request, Response, RequestHandler } from 'express';
+import express, { RequestHandler } from 'express';
 import request from 'supertest';
+import { PaymentParams } from '../src/types/gateway';
 
 describe('PaymentSDK', () => {
   it('should instantiate with config', () => {
@@ -32,7 +33,7 @@ describe('PaymentSDK', () => {
       mode: 'sandbox',
       gateways: { esewa: { clientId: 'id', secret: 'secret' } }
     });
-    await expect(sdk.pay({ amount: 1000, currency: 'NPR', returnUrl: 'url' } as any)).rejects.toThrow(PaymentError);
+    await expect(sdk.pay({ amount: 1000, currency: 'NPR', returnUrl: 'url' } as unknown as PaymentParams)).rejects.toThrow(PaymentError);
   });
 
   it('should throw error for invalid amount', async () => {
@@ -48,7 +49,7 @@ describe('PaymentSDK', () => {
       mode: 'sandbox',
       gateways: { esewa: { clientId: 'id', secret: 'secret' } }
     });
-    await expect(sdk.pay({ gateway: 'unknown' as any, amount: 1000, currency: 'NPR', returnUrl: 'url' })).rejects.toThrow(PaymentError);
+    await expect(sdk.pay({ gateway: 'unknown' as unknown as GatewayType, amount: 1000, currency: 'NPR', returnUrl: 'url' })).rejects.toThrow(PaymentError);
   });
 
   it('should verify a payment (mock)', async () => {
@@ -84,7 +85,7 @@ describe('PaymentSDK', () => {
       mode: 'sandbox',
       gateways: { esewa: { clientId: 'id', secret: 'secret' } }
     });
-    await expect(sdk.verify({ gateway: 'unknown' as any, transactionId: 'tx', amount: 1000 })).rejects.toThrow(PaymentError);
+    await expect(sdk.verify({ gateway: 'unknown' as unknown as GatewayType, transactionId: 'tx', amount: 1000 })).rejects.toThrow(PaymentError);
   });
 
   it('should throw error for refund with unsupported gateway', async () => {
@@ -92,7 +93,7 @@ describe('PaymentSDK', () => {
       mode: 'sandbox',
       gateways: { esewa: { clientId: 'id', secret: 'secret' } }
     });
-    await expect(sdk.refund({ gateway: 'unknown' as any, transactionId: 'tx', amount: 1000 })).rejects.toThrow(PaymentError);
+    await expect(sdk.refund({ gateway: 'unknown' as unknown as GatewayType, transactionId: 'tx', amount: 1000 })).rejects.toThrow(PaymentError);
   });
 });
 
@@ -103,12 +104,12 @@ describe('PaymentSDK Advanced', () => {
       gateways: { esewa: { clientId: 'id', secret: 'secret' } }
     });
     const tx = {
-      gateway: 'esewa',
-      status: 'success',
+      gateway: 'test',
+      status: 'success' as const,
       params: {},
       transactionId: 'tx-advanced',
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
     sdk.addTransaction(tx);
     expect(sdk.getTransaction('tx-advanced')).toBeDefined();
@@ -120,7 +121,7 @@ describe('PaymentSDK Advanced', () => {
   it('should handle webhook POST (mock)', async () => {
     const app = express();
     app.use(express.json());
-    app.post('/webhook', paymentWebhookHandler as RequestHandler);
+    app.post('/webhook', paymentWebhookHandler as unknown as RequestHandler);
     const res = await request(app)
       .post('/webhook?gateway=esewa')
       .send({ some: 'event' });

@@ -1,5 +1,5 @@
-import { PaymentSDK, GatewayType, eventBus } from '../src';
-import { IPaymentGateway, PaymentParams, PaymentResult } from '../src/types/gateway';
+import { PaymentSDK, eventBus } from '../src';
+import { IPaymentGateway, PaymentParams } from '../src/types/gateway';
 
 const mockGateway: IPaymentGateway = {
   pay: jest.fn(async (params) => ({ gateway: params.gateway, status: 'success' as const, params: { id: 'pay_1' } })),
@@ -84,7 +84,14 @@ describe('PaymentSDK Core', () => {
   });
 
   it('should add, update, get, and list transactions', () => {
-    const tx = { gateway: 'stripe', status: 'success', params: {}, transactionId: 'tx-advanced', createdAt: new Date(), updatedAt: new Date() };
+    const tx = {
+      gateway: 'test',
+      status: 'success' as const,
+      params: {},
+      transactionId: 'tx-advanced',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
     sdk.addTransaction(tx);
     expect(sdk.getTransaction('tx-advanced')).toBeDefined();
     sdk.updateTransaction('tx-advanced', { status: 'failure' });

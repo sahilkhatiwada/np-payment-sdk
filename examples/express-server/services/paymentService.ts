@@ -1,6 +1,7 @@
-import { PaymentSDK, GatewayType } from '../../../src';
+import { PaymentSDK } from '../../../src';
 import dotenv from 'dotenv';
 dotenv.config();
+import { PaymentParams, VerifyParams, RefundParams } from '../../../src/types/gateway';
 
 const sdk = new PaymentSDK({
   mode: process.env.PAYMENT_MODE as 'sandbox' | 'production' || 'sandbox',
@@ -22,9 +23,9 @@ const sdk = new PaymentSDK({
  * Payment service encapsulating SDK operations
  */
 export const paymentService = {
-  pay: (params: any) => sdk.pay(params),
-  verify: (params: any) => sdk.verify(params),
-  refund: (params: any) => sdk.refund(params),
-  addTransaction: (record: any) => sdk.addTransaction(record),
+  pay: (params: PaymentParams) => sdk.pay(params),
+  verify: (params: VerifyParams) => sdk.verify(params),
+  refund: (params: RefundParams) => sdk.refund(params),
+  addTransaction: (record: Record<string, unknown>) => sdk.addTransaction(record),
   listTransactions: () => sdk.listTransactions(),
 }; 

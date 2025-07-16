@@ -8,6 +8,7 @@ import * as txStore from './utils/transactionStore';
 import { TransactionRecord } from './utils/transactionStore';
 import { IPaymentGateway } from './types/gateway';
 import { eventBus } from './utils/eventBus';
+import { VerifyParams, RefundParams, SubscriptionParams, InvoiceParams, WalletParams, SubscriptionResult, InvoiceResult, WalletResult } from './types/gateway';
 
 export enum GatewayType {
   ESEWA = 'esewa',
@@ -32,13 +33,13 @@ export interface PaymentSDKConfig {
     connectips?: ConnectIPSConfig;
     imepay?: IMEPayConfig;
     mobilebanking?: MobileBankingConfig;
-    stripe?: any;
-    paypal?: any;
-    razorpay?: any;
-    cashfree?: any;
-    flutterwave?: any;
-    paystack?: any;
-    [key: string]: any;
+    stripe?: { apiKey: string };
+    paypal?: { clientId: string; clientSecret: string };
+    razorpay?: { keyId: string; keySecret: string };
+    cashfree?: { clientId: string; clientSecret: string; environment?: 'TEST' | 'PROD' };
+    flutterwave?: { publicKey: string; secretKey: string; encryptionKey: string };
+    paystack?: { secretKey: string };
+    [key: string]: unknown;
   };
   customProviders?: { [key: string]: IPaymentGateway };
 }
@@ -112,7 +113,7 @@ export class PaymentSDK {
     return result;
   }
 
-  async verify(params: any): Promise<PaymentResult> {
+  async verify(params: VerifyParams): Promise<PaymentResult> {
     const gateway = this.gateways.get(params.gateway);
     if (!gateway) {
       throw new PaymentError('Gateway not configured: ' + params.gateway, 'GATEWAY_NOT_CONFIGURED');
@@ -122,7 +123,7 @@ export class PaymentSDK {
     return result;
   }
 
-  async refund(params: any): Promise<PaymentResult> {
+  async refund(params: RefundParams): Promise<PaymentResult> {
     const gateway = this.gateways.get(params.gateway);
     if (!gateway) {
       throw new PaymentError('Gateway not configured: ' + params.gateway, 'GATEWAY_NOT_CONFIGURED');
@@ -132,7 +133,7 @@ export class PaymentSDK {
     return result;
   }
 
-  async subscribe(params: any): Promise<any> {
+  async subscribe(params: SubscriptionParams): Promise<SubscriptionResult> {
     const gateway = this.gateways.get(params.gateway);
     if (!gateway || !gateway.subscribe) {
       throw new PaymentError('Subscription not supported for gateway: ' + params.gateway, 'SUBSCRIPTION_NOT_SUPPORTED');
@@ -142,7 +143,7 @@ export class PaymentSDK {
     return result;
   }
 
-  async createInvoice(params: any): Promise<any> {
+  async createInvoice(params: InvoiceParams): Promise<InvoiceResult> {
     const gateway = this.gateways.get(params.gateway);
     if (!gateway || !gateway.createInvoice) {
       throw new PaymentError('Invoice not supported for gateway: ' + params.gateway, 'INVOICE_NOT_SUPPORTED');
@@ -152,7 +153,7 @@ export class PaymentSDK {
     return result;
   }
 
-  async wallet(params: any): Promise<any> {
+  async wallet(params: WalletParams): Promise<WalletResult> {
     const gateway = this.gateways.get(params.gateway);
     if (!gateway || !gateway.wallet) {
       throw new PaymentError('Wallet not supported for gateway: ' + params.gateway, 'WALLET_NOT_SUPPORTED');
@@ -163,10 +164,10 @@ export class PaymentSDK {
   }
 
   // Transaction history and reconciliation tools
-  addTransaction(record: any) {
+  addTransaction(record: TransactionRecord) {
     txStore.addTransaction(record);
   }
-  updateTransaction(transactionId: string, updates: any) {
+  updateTransaction(transactionId: string, updates: Partial<TransactionRecord>) {
     txStore.updateTransaction(transactionId, updates);
   }
   getTransaction(transactionId: string): TransactionRecord | undefined {

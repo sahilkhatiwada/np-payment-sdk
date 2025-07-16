@@ -1,4 +1,4 @@
-import { IPaymentGateway, PaymentParams, PaymentResult, VerifyParams, RefundParams, SubscriptionParams, SubscriptionResult, InvoiceParams, InvoiceResult, WalletParams, WalletResult } from '../types/gateway';
+import { IPaymentGateway, PaymentParams, PaymentResult, VerifyParams, RefundParams, SubscriptionParams, SubscriptionResult, InvoiceParams, InvoiceResult, WalletResult } from '../types/gateway';
 import Stripe from 'stripe';
 
 /**
@@ -8,7 +8,7 @@ export class StripeGateway implements IPaymentGateway {
   private stripe: Stripe;
 
   constructor(private config: { apiKey: string }) {
-    this.stripe = new Stripe(config.apiKey, { apiVersion: '2022-11-15' as any });
+    this.stripe = new Stripe(config.apiKey, { apiVersion: '2025-06-30.basil' });
   }
 
   /**
@@ -19,24 +19,32 @@ export class StripeGateway implements IPaymentGateway {
       const paymentIntent = await this.stripe.paymentIntents.create({
         amount: Math.round(params.amount * 100), // Stripe expects smallest currency unit
         currency: params.currency.toLowerCase(),
-        metadata: params.metadata || {},
-        receipt_email: params.email,
-        description: params.description,
-        return_url: params.returnUrl,
+        metadata: typeof params.metadata === 'object' ? Object.fromEntries(Object.entries(params.metadata).map(([k, v]) => [k, typeof v === 'string' || typeof v === 'number' ? v : v === null ? null : String(v)])) : undefined,
+        receipt_email: typeof params.email === 'string' ? params.email : undefined,
+        description: typeof params.description === 'string' ? params.description : undefined,
+        return_url: typeof params.returnUrl === 'string' ? params.returnUrl : undefined,
         payment_method_types: ['card'],
       });
       return {
         gateway: 'stripe',
         status: 'success',
-        params: paymentIntent,
+        params: { id: paymentIntent.id, status: paymentIntent.status },
         message: 'Stripe payment initiated',
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          gateway: 'stripe',
+          status: 'failure',
+          params: { error: err.message },
+          message: err.message || 'Stripe payment failed',
+        };
+      }
       return {
         gateway: 'stripe',
         status: 'failure',
-        params: err,
-        message: err.message || 'Stripe payment failed',
+        params: { error: String(err) },
+        message: 'Stripe payment failed',
       };
     }
   }
@@ -50,15 +58,23 @@ export class StripeGateway implements IPaymentGateway {
       return {
         gateway: 'stripe',
         status: paymentIntent.status === 'succeeded' ? 'success' : 'failure',
-        params: paymentIntent,
+        params: { id: paymentIntent.id, status: paymentIntent.status },
         message: 'Stripe payment verification',
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          gateway: 'stripe',
+          status: 'failure',
+          params: { error: err.message },
+          message: err.message || 'Stripe verification failed',
+        };
+      }
       return {
         gateway: 'stripe',
         status: 'failure',
-        params: err,
-        message: err.message || 'Stripe verification failed',
+        params: { error: String(err) },
+        message: 'Stripe verification failed',
       };
     }
   }
@@ -75,15 +91,23 @@ export class StripeGateway implements IPaymentGateway {
       return {
         gateway: 'stripe',
         status: 'success',
-        params: refund,
+        params: { id: refund.id, status: refund.status },
         message: 'Stripe refund processed',
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          gateway: 'stripe',
+          status: 'failure',
+          params: { error: err.message },
+          message: err.message || 'Stripe refund failed',
+        };
+      }
       return {
         gateway: 'stripe',
         status: 'failure',
-        params: err,
-        message: err.message || 'Stripe refund failed',
+        params: { error: String(err) },
+        message: 'Stripe refund failed',
       };
     }
   }
@@ -99,15 +123,23 @@ export class StripeGateway implements IPaymentGateway {
       });
       return {
         gateway: 'stripe',
-        status: subscription.status as any,
-        params: subscription,
+        status: subscription.status === 'active' ? 'active' : 'inactive',
+        params: { id: subscription.id, status: subscription.status },
         message: 'Stripe subscription created',
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          gateway: 'stripe',
+          status: 'cancelled',
+          params: { error: err.message },
+          message: 'Stripe subscription not implemented',
+        };
+      }
       return {
         gateway: 'stripe',
         status: 'cancelled',
-        params: {},
+        params: { error: String(err) },
         message: 'Stripe subscription not implemented',
       };
     }
@@ -119,23 +151,28 @@ export class StripeGateway implements IPaymentGateway {
   async createInvoice(params: InvoiceParams): Promise<InvoiceResult> {
     try {
       const invoice = await this.stripe.invoices.create({
-        customer: params.customerId,
-        auto_advance: true,
-        collection_method: 'send_invoice',
-        days_until_due: 30,
-        metadata: params.metadata || {},
-      });
+        customer: params.customer,
+        metadata: typeof params.metadata === 'object' ? Object.fromEntries(Object.entries(params.metadata).map(([k, v]) => [k, typeof v === 'string' || typeof v === 'number' ? v : v === null ? null : String(v)])) : undefined,
+      } as any);
       return {
         gateway: 'stripe',
         status: 'created',
-        params: invoice,
+        params: { id: invoice.id, status: invoice.status },
         message: 'Stripe invoice created',
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          gateway: 'stripe',
+          status: 'cancelled',
+          params: { error: err.message },
+          message: 'Stripe invoice not implemented',
+        };
+      }
       return {
         gateway: 'stripe',
         status: 'cancelled',
-        params: {},
+        params: { error: String(err) },
         message: 'Stripe invoice not implemented',
       };
     }
@@ -144,11 +181,11 @@ export class StripeGateway implements IPaymentGateway {
   /**
    * Wallet operations (not directly supported by Stripe, stub)
    */
-  async wallet(params: WalletParams): Promise<WalletResult> {
+  async wallet(params: any): Promise<WalletResult> {
     return {
       gateway: 'stripe',
       status: 'failure',
-      params: {},
+      params: { error: 'Stripe does not support wallet operations' },
       message: 'Stripe does not support wallet operations',
     };
   }
