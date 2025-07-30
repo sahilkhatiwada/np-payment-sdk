@@ -88,10 +88,11 @@ npm run clean          # Clean build and coverage directories
 
 ## Pre-commit Hooks
 
-We use Husky to run pre-commit hooks that:
+We use Husky v9+ (modern format) to run pre-commit hooks that:
 - Fix linting issues automatically
 - Run TypeScript type checking
 - Execute tests before allowing commits
+- Uses the modern Husky configuration (no shell script headers)
 
 ## Coverage Requirements
 
@@ -108,7 +109,7 @@ The project maintains the following minimum coverage thresholds:
    npm install
    ```
 
-2. **Set up pre-commit hooks:**
+2. **Set up pre-commit hooks (Husky v9+ modern format):**
    ```bash
    npm run prepare
    ```
