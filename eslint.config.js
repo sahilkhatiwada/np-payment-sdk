@@ -8,7 +8,7 @@ export default [
   { ignores: ['dist/**', 'node_modules/**'] },
   js.configs.recommended,
   {
-    files: ['src/**/*.ts', 'src/**/*.tsx', 'tests/**/*.ts', 'examples/**/*.ts', 'examples/**/*.tsx'],
+    files: ['src/**/*.ts', 'src/**/*.tsx', 'tests/**/*.ts', 'examples/**/*.ts', 'examples/**/*.tsx', '*.js'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -26,8 +26,11 @@ export default [
         afterAll: true,
         console: true,
         process: true,
-        module: true,
+        module: 'writable',
         require: true,
+        exports: 'writable',
+        __dirname: true,
+        __filename: true,
       },
     },
     plugins: {
