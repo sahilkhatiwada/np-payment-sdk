@@ -21,8 +21,7 @@
     "ci-check": "npm run quality-check && npm run test:coverage && npm run build",
     "pre-commit": "npm run lint:fix && npm run type-check && npm run test",
     "clean": "rimraf dist coverage",
-    "prepare": "npm run build && husky install",
-    "postinstall": "husky install"
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
