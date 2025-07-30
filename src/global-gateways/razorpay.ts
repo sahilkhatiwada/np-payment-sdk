@@ -43,7 +43,6 @@ export class RazorpayGateway implements IPaymentGateway {
   /**
    * Verify a payment (fetch payment)
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async verify(params: VerifyParams): Promise<PaymentResult> {
     try {
       const payment = await this.razorpay.payments.fetch(params.transactionId);
@@ -66,14 +65,19 @@ export class RazorpayGateway implements IPaymentGateway {
   /**
    * Refund a payment
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async refund(params: RefundParams): Promise<PaymentResult> {
     try {
-      // Simulate a successful refund for testing
+      // In a real implementation, you would call the Razorpay refund API
+      // For now, simulate a successful refund for testing
+      const refund = await this.razorpay.payments.refund(params.transactionId, {
+        amount: Math.round(params.amount * 100),
+        notes: { refund_reason: (params as Record<string, unknown>).reason as string || 'Customer request' },
+      });
+
       return {
         gateway: 'razorpay',
         status: 'success',
-        params: { id: 'refund_123' },
+        params: { id: refund.id, status: refund.status },
         message: 'Refund successful',
       };
     } catch (err: unknown) {
