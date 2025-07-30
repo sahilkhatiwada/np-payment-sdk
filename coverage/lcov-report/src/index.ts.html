@@ -242,7 +242,8 @@
 <a name='L177'></a><a href='#L177'>177</a>
 <a name='L178'></a><a href='#L178'>178</a>
 <a name='L179'></a><a href='#L179'>179</a>
-<a name='L180'></a><a href='#L180'>180</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
+<a name='L180'></a><a href='#L180'>180</a>
+<a name='L181'></a><a href='#L181'>181</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
@@ -252,6 +253,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
@@ -431,6 +433,7 @@ import * as txStore from './utils/transactionStore';
 import { TransactionRecord } from './utils/transactionStore';
 import { IPaymentGateway } from './types/gateway';
 import { eventBus } from './utils/eventBus';
+import { VerifyParams, RefundParams, SubscriptionParams, InvoiceParams, WalletParams, SubscriptionResult, InvoiceResult, WalletResult } from './types/gateway';
 &nbsp;
 export enum GatewayType {
   ESEWA = 'esewa',
@@ -455,13 +458,13 @@ export interface PaymentSDKConfig {
     connectips?: ConnectIPSConfig;
     imepay?: IMEPayConfig;
     mobilebanking?: MobileBankingConfig;
-    stripe?: any;
-    paypal?: any;
-    razorpay?: any;
-    cashfree?: any;
-    flutterwave?: any;
-    paystack?: any;
-    [key: string]: any;
+    stripe?: { apiKey: string };
+    paypal?: { clientId: string; clientSecret: string };
+    razorpay?: { keyId: string; keySecret: string };
+    cashfree?: { clientId: string; clientSecret: string; environment?: 'TEST' | 'PROD' };
+    flutterwave?: { publicKey: string; secretKey: string; encryptionKey: string };
+    paystack?: { secretKey: string };
+    [key: string]: unknown;
   };
   customProviders?: { [key: string]: IPaymentGateway };
 }
@@ -535,7 +538,7 @@ export class PaymentSDK {
     return result;
   }
 &nbsp;
-  async verify(params: any): Promise&lt;PaymentResult&gt; {
+  async verify(params: VerifyParams): Promise&lt;PaymentResult&gt; {
     const gateway = this.gateways.get(params.gateway);
     if (!gateway) {
       throw new PaymentError('Gateway not configured: ' + params.gateway, 'GATEWAY_NOT_CONFIGURED');
@@ -545,7 +548,7 @@ export class PaymentSDK {
     return result;
   }
 &nbsp;
-  async refund(params: any): Promise&lt;PaymentResult&gt; {
+  async refund(params: RefundParams): Promise&lt;PaymentResult&gt; {
     const gateway = this.gateways.get(params.gateway);
     if (!gateway) {
       throw new PaymentError('Gateway not configured: ' + params.gateway, 'GATEWAY_NOT_CONFIGURED');
@@ -555,7 +558,7 @@ export class PaymentSDK {
     return result;
   }
 &nbsp;
-  async subscribe(params: any): Promise&lt;any&gt; {
+  async subscribe(params: SubscriptionParams): Promise&lt;SubscriptionResult&gt; {
     const gateway = this.gateways.get(params.gateway);
     <span class="missing-if-branch" title="if path not taken" >I</span>if (!gateway || !gateway.subscribe) {
 <span class="cstat-no" title="statement not covered" >      throw new PaymentError('Subscription not supported for gateway: ' + params.gateway, 'SUBSCRIPTION_NOT_SUPPORTED');</span>
@@ -565,7 +568,7 @@ export class PaymentSDK {
     return result;
   }
 &nbsp;
-  async createInvoice(params: any): Promise&lt;any&gt; {
+  async createInvoice(params: InvoiceParams): Promise&lt;InvoiceResult&gt; {
     const gateway = this.gateways.get(params.gateway);
     <span class="missing-if-branch" title="if path not taken" >I</span>if (!gateway || !gateway.createInvoice) {
 <span class="cstat-no" title="statement not covered" >      throw new PaymentError('Invoice not supported for gateway: ' + params.gateway, 'INVOICE_NOT_SUPPORTED');</span>
@@ -575,7 +578,7 @@ export class PaymentSDK {
     return result;
   }
 &nbsp;
-  async wallet(params: any): Promise&lt;any&gt; {
+  async wallet(params: WalletParams): Promise&lt;WalletResult&gt; {
     const gateway = this.gateways.get(params.gateway);
     <span class="missing-if-branch" title="if path not taken" >I</span>if (!gateway || !gateway.wallet) {
 <span class="cstat-no" title="statement not covered" >      throw new PaymentError('Wallet not supported for gateway: ' + params.gateway, 'WALLET_NOT_SUPPORTED');</span>
@@ -586,10 +589,10 @@ export class PaymentSDK {
   }
 &nbsp;
   // Transaction history and reconciliation tools
-  addTransaction(record: any) {
+  addTransaction(record: TransactionRecord) {
     txStore.addTransaction(record);
   }
-  updateTransaction(transactionId: string, updates: any) {
+  updateTransaction(transactionId: string, updates: Partial&lt;TransactionRecord&gt;) {
     txStore.updateTransaction(transactionId, updates);
   }
   getTransaction(transactionId: string): TransactionRecord | undefined {
@@ -607,7 +610,7 @@ export { eventBus }; </pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-14T10:36:45.303Z
+                at 2025-07-30T15:56:08.396Z
             </div>
         <script src="../prettify.js"></script>
         <script>

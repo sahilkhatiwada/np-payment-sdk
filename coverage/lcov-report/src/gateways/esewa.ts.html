@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">78.57% </span>
+                <span class="strong">55% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>11/14</span>
+                <span class='fraction'>11/20</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">40% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>6/12</span>
+                <span class='fraction'>6/15</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">78.57% </span>
+                <span class="strong">55% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>11/14</span>
+                <span class='fraction'>11/20</span>
             </div>
         
             
@@ -135,7 +135,16 @@
 <a name='L70'></a><a href='#L70'>70</a>
 <a name='L71'></a><a href='#L71'>71</a>
 <a name='L72'></a><a href='#L72'>72</a>
-<a name='L73'></a><a href='#L73'>73</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -175,19 +184,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -203,6 +200,27 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -245,8 +263,11 @@ export class EsewaGateway {
         params: payload,
         message: 'Payment initiated (mock)'
       };
-    } catch (err: any) {
-<span class="cstat-no" title="statement not covered" >      throw new PaymentError(err.message || 'eSewa payment failed', 'ESEWA_PAYMENT_ERROR');</span>
+    } catch (err: unknown) {
+<span class="cstat-no" title="statement not covered" >      <span class="missing-if-branch" title="if path not taken" >I</span>if (err instanceof Error) {</span>
+<span class="cstat-no" title="statement not covered" >        throw new PaymentError(err.message || 'eSewa payment failed', 'ESEWA_PAYMENT_ERROR');</span>
+      }
+<span class="cstat-no" title="statement not covered" >      throw new PaymentError('eSewa payment failed', 'ESEWA_PAYMENT_ERROR');</span>
     }
   }
 &nbsp;
@@ -260,8 +281,11 @@ export class EsewaGateway {
         params,
         message: 'Payment verified (mock)'
       };
-    } catch (err: any) {
-<span class="cstat-no" title="statement not covered" >      throw new PaymentError(err.message || 'eSewa verification failed', 'ESEWA_VERIFY_ERROR');</span>
+    } catch (err: unknown) {
+<span class="cstat-no" title="statement not covered" >      <span class="missing-if-branch" title="if path not taken" >I</span>if (err instanceof Error) {</span>
+<span class="cstat-no" title="statement not covered" >        throw new PaymentError(err.message || 'eSewa verification failed', 'ESEWA_VERIFY_ERROR');</span>
+      }
+<span class="cstat-no" title="statement not covered" >      throw new PaymentError('eSewa verification failed', 'ESEWA_VERIFY_ERROR');</span>
     }
   }
 &nbsp;
@@ -275,8 +299,11 @@ export class EsewaGateway {
         params,
         message: 'Refund processed (mock)'
       };
-    } catch (err: any) {
-<span class="cstat-no" title="statement not covered" >      throw new PaymentError(err.message || 'eSewa refund failed', 'ESEWA_REFUND_ERROR');</span>
+    } catch (err: unknown) {
+<span class="cstat-no" title="statement not covered" >      <span class="missing-if-branch" title="if path not taken" >I</span>if (err instanceof Error) {</span>
+<span class="cstat-no" title="statement not covered" >        throw new PaymentError(err.message || 'eSewa refund failed', 'ESEWA_REFUND_ERROR');</span>
+      }
+<span class="cstat-no" title="statement not covered" >      throw new PaymentError('eSewa refund failed', 'ESEWA_REFUND_ERROR');</span>
     }
   }
 } </pre></td></tr></table></pre>
@@ -286,7 +313,7 @@ export class EsewaGateway {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-14T10:36:45.303Z
+                at 2025-07-30T15:56:08.396Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">20% </span>
+                <span class="strong">13.04% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>3/15</span>
+                <span class='fraction'>3/23</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/32</span>
+                <span class='fraction'>0/42</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">20% </span>
+                <span class="strong">13.04% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>3/15</span>
+                <span class='fraction'>3/23</span>
             </div>
         
             
@@ -145,7 +145,15 @@
 <a name='L80'></a><a href='#L80'>80</a>
 <a name='L81'></a><a href='#L81'>81</a>
 <a name='L82'></a><a href='#L82'>82</a>
-<a name='L83'></a><a href='#L83'>83</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -190,8 +198,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -218,8 +230,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -269,11 +285,15 @@ export class KhaltiGateway {
         params: response.data,
         message: 'Payment initiated',
       };
-    } catch (err: any) {
-<span class="cstat-no" title="statement not covered" >      throw new PaymentError(</span>
-        err.response?.data?.detail || err.message || 'Khalti payment failed',
-        'KHALTI_PAYMENT_ERROR'
-      );
+    } catch (err: unknown) {
+<span class="cstat-no" title="statement not covered" >      <span class="missing-if-branch" title="if path not taken" >I</span>if (err &amp;&amp; typeof err === 'object' &amp;&amp; 'response' in err &amp;&amp; err.response &amp;&amp; typeof err.response === 'object' &amp;&amp; 'data' in err.response &amp;&amp; err.response.data &amp;&amp; typeof err.response.data === 'object' &amp;&amp; 'detail' in err.response.data) {</span>
+        // @ts-expect-error: Type mismatch due to third-party library
+<span class="cstat-no" title="statement not covered" >        throw new PaymentError(err.response.data.detail || (err as Error).message || 'Khalti payment failed', 'KHALTI_PAYMENT_ERROR');</span>
+      }
+<span class="cstat-no" title="statement not covered" >      <span class="missing-if-branch" title="if path not taken" >I</span>if (err instanceof Error) {</span>
+<span class="cstat-no" title="statement not covered" >        throw new PaymentError(err.message || 'Khalti payment failed', 'KHALTI_PAYMENT_ERROR');</span>
+      }
+<span class="cstat-no" title="statement not covered" >      throw new PaymentError('Khalti payment failed', 'KHALTI_PAYMENT_ERROR');</span>
     }
   }
 &nbsp;
@@ -297,15 +317,19 @@ export class KhaltiGateway {
         params: response.data,
         message: 'Payment verification result',
       };
-    } catch (err: any) {
-<span class="cstat-no" title="statement not covered" >      throw new PaymentError(</span>
-        err.response?.data?.detail || err.message || 'Khalti verification failed',
-        'KHALTI_VERIFY_ERROR'
-      );
+    } catch (err: unknown) {
+<span class="cstat-no" title="statement not covered" >      <span class="missing-if-branch" title="if path not taken" >I</span>if (err &amp;&amp; typeof err === 'object' &amp;&amp; 'response' in err &amp;&amp; err.response &amp;&amp; typeof err.response === 'object' &amp;&amp; 'data' in err.response &amp;&amp; err.response.data &amp;&amp; typeof err.response.data === 'object' &amp;&amp; 'detail' in err.response.data) {</span>
+        // @ts-expect-error: Type mismatch due to third-party library
+<span class="cstat-no" title="statement not covered" >        throw new PaymentError(err.response.data.detail || (err as Error).message || 'Khalti verification failed', 'KHALTI_VERIFY_ERROR');</span>
+      }
+<span class="cstat-no" title="statement not covered" >      <span class="missing-if-branch" title="if path not taken" >I</span>if (err instanceof Error) {</span>
+<span class="cstat-no" title="statement not covered" >        throw new PaymentError(err.message || 'Khalti verification failed', 'KHALTI_VERIFY_ERROR');</span>
+      }
+<span class="cstat-no" title="statement not covered" >      throw new PaymentError('Khalti verification failed', 'KHALTI_VERIFY_ERROR');</span>
     }
   }
 &nbsp;
-<span class="fstat-no" title="function not covered" >  async </span>refund(params: { transactionId: string; amount: number }): Promise&lt;PaymentResult&gt; {
+<span class="fstat-no" title="function not covered" >  async </span>refund(): Promise&lt;PaymentResult&gt; {
     // Khalti does not provide a public refund API as of now.
 <span class="cstat-no" title="statement not covered" >    throw new PaymentError('Khalti refund is not supported via public API', 'KHALTI_REFUND_UNSUPPORTED');</span>
   }
@@ -316,7 +340,7 @@ export class KhaltiGateway {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-14T10:36:45.303Z
+                at 2025-07-30T15:56:08.396Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
