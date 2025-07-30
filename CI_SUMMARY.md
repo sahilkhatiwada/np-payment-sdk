@@ -16,10 +16,7 @@
 - **Scheduled Scans**: Weekly security scans
 - **JavaScript/TypeScript Analysis**: Language-specific security checks
 
-#### Dependency Management (`.github/dependabot.yml`)
-- **Automated Updates**: Weekly dependency updates
-- **Security Patches**: Automatic security vulnerability fixes
-- **Proper Labeling**: Organized PR management
+
 
 ### 2. Enhanced NPM Scripts
 
@@ -159,7 +156,7 @@ npm run pre-commit
 
 ### For Maintainers
 - Monitor GitHub Actions for CI status
-- Review Dependabot PRs weekly
+- Check for dependency updates manually using `npm outdated`
 - Address security alerts promptly
 - Ensure coverage thresholds are maintained
 

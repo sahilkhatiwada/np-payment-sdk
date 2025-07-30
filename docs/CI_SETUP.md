@@ -47,13 +47,7 @@ Our CI pipeline ensures code quality, security, and reliability through automate
 - JavaScript/TypeScript code scanning
 - Automated security alerts
 
-### 3. Dependabot (`.github/dependabot.yml`)
 
-**Features:**
-- Weekly dependency updates
-- GitHub Actions updates
-- Automated pull requests for security patches
-- Proper labeling and assignment
 
 ## NPM Scripts
 
@@ -162,7 +156,7 @@ Add these badges to your README.md:
    ```
 
 2. **Keep dependencies updated:**
-   - Review Dependabot PRs regularly
+   - Check for updates manually with `npm outdated`
    - Test thoroughly after dependency updates
 
 3. **Monitor CI status:**
